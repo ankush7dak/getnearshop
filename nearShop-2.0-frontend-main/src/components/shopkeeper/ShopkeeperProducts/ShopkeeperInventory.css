@@ -1,0 +1,289 @@
+/* Root Theme */
+:root {
+  --primary: #2563eb;
+  --primary-light: #eff6ff;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --gray: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f9fafb;
+  --white: #ffffff;
+}
+
+/* Layout */
+.inventory-pro {
+  padding: 20px 30px;
+  background: var(--bg);
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Header */
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.inventory-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bulk-actions button {
+  background: var(--danger);
+  color: var(--white);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.bulk-actions button:hover {
+  background: #b91c1c;
+}
+
+/* Toolbar */
+.inventory-toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.inventory-toolbar select,
+.inventory-toolbar button,
+.search input {
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+.inventory-toolbar select:focus,
+.search input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* Search */
+.search {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 10px;
+}
+
+.search input {
+  border: none;
+  outline: none;
+}
+
+/* Export Button */
+.export {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.export:hover {
+  background: #1d4ed8;
+}
+
+/* Table */
+.table-wrap {
+  height: 500px;              /* better than max-height */
+  overflow-y: auto;           /* enable scroll */
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    scroll-behavior: smooth;
+
+  
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: var(--primary-light);
+}
+
+th,
+td {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  font-weight: 600;
+  color: #374151;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: 0.2s;
+}
+
+tbody tr:hover {
+  background: #f3f4f6;
+}
+
+/* Product Cell */
+.prod {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* Stock Colors */
+.ok {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.low {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.out {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.out-row {
+  background: #fff1f2;
+}
+
+/* Toggle Button */
+.toggle {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.product-image img {
+    width: 40%;
+    height: 37px;
+    object-fit: cover;
+}
+
+.image-container {
+    position: relative;
+    width: 104px;
+    height: 67px;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.image-container:hover .overlay-text {
+  opacity: 1;
+}
+
+.cross-btn{
+  display: inline-block;
+}
+
+.toggle.on {
+  background: #dcfce7;
+  color: var(--success);
+}
+
+.toggle.off {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+/* Actions */
+.actions button {
+  border: none;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 6px 10px;
+  margin-right: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.actions button:hover {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* Input in edit mode */
+td input {
+  width: 80px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* Checkbox */
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .inventory-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  th,
+  td {
+    padding: 10px;
+  }
+}

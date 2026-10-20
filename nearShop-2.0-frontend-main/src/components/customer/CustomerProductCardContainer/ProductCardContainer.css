@@ -1,0 +1,76 @@
+.product-card-container {
+      display: grid;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    position: absolute;
+    top: -16vh;
+}
+
+.no-products {
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+  padding: 40px 0;
+}
+
+.card-container{
+      display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    position: absolute;
+}
+
+@media (max-width: 1290px) {
+  .product-card-container {
+    grid-template-columns: repeat(4, 1fr); /* 2 items per row */      
+              top: -25vh;
+
+
+  }
+}
+
+@media (max-width: 807px) {
+  .product-card-container {
+        grid-template-columns: repeat(3, 1fr); /* 2 items per row */
+                top: -25vh;
+
+
+  }
+}
+
+@media (max-width: 564px) {
+  .product-card-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 items per row */
+            top: -29vh;
+
+
+  }
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .product-card-container {
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 420px) {
+  .product-card-container {
+    gap: 8px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .product-card-container {
+    gap: 8px;
+    padding: 8px;
+  }
+}
+

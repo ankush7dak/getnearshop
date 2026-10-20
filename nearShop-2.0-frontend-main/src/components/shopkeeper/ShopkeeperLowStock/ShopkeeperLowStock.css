@@ -1,0 +1,107 @@
+.lowstock-page {
+  padding: 20px;
+}
+
+/* Header */
+.lowstock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Toolbar */
+.lowstock-toolbar {
+  position: sticky;
+  top: 0;
+  background: #fff7ed;
+  padding: 12px;
+  margin: 14px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 14px;
+}
+
+th,
+td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.low-row {
+  background: #fffbeb;
+}
+
+.out-row {
+  background: #fef2f2;
+}
+
+/* Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+.badge.urgent {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.reorder-btn {
+  background: #f97316;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Mobile */
+.mobile-grid {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .table-wrap {
+    display: none;
+  }
+
+  .mobile-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .mobile-card {
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+  }
+}

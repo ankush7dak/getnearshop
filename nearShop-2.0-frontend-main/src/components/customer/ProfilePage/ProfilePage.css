@@ -1,0 +1,300 @@
+/* ===========================
+   GLOBAL RESET
+=========================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===========================
+   PAGE WRAPPER
+=========================== */
+
+.nearshop-profile-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+  overflow-x: hidden;
+}
+
+/* ===========================
+   TITLE
+=========================== */
+
+.page-title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 22px;
+}
+
+/* ===========================
+   PROFILE CARD
+=========================== */
+
+.profile-card {
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 28px;
+}
+
+/* ===========================
+   AVATAR SECTION
+=========================== */
+
+.avatar-section {
+  text-align: center;
+}
+
+.avatar-section img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #eee;
+}
+
+.avatar-section h3 {
+  margin-top: 12px;
+  font-size: 18px;
+}
+
+.avatar-section p {
+  font-size: 14px;
+  color: #777;
+}
+
+/* ===========================
+   FORM
+=========================== */
+
+.profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 22px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.form-group input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4f46e5;
+}
+
+/* ===========================
+   ACTION BUTTONS
+=========================== */
+
+.profile-actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.btn-primary {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  min-height: 42px;
+}
+
+.btn-primary:hover {
+  background: #4338ca;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  min-height: 42px;
+}
+
+.profile-container-1{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100vw;
+}
+
+/* ===========================
+   TABLET
+=========================== */
+
+@media (max-width: 900px) {
+  .profile-card {
+    grid-template-columns: 1fr;
+  }
+
+  .avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    text-align: left;
+  }
+
+  .avatar-section img {
+    width: 110px;
+    height: 110px;
+  }
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media (max-width: 600px) {
+  .profile-form {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-actions {
+    grid-column: span 1;
+    justify-content: stretch;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .profile-card {
+    padding: 20px;
+  }
+}
+
+/* ===========================
+   EXTRA SMALL PHONES
+=========================== */
+
+@media (max-width: 420px) {
+  .avatar-section img {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* ===========================
+   ULTRA WIDE
+=========================== */
+
+@media (min-width: 1600px) {
+  .nearshop-profile-page {
+    max-width: 1300px;
+  }
+}
+
+/* ================= PASSWORD MODAL ================= */
+
+.password-btn {
+  margin-top: 12px;
+  background: #111827;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.password-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.password-modal {
+  background: white;
+  padding: 26px;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+
+.password-modal h3 {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+/* Tabs */
+
+.password-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.password-tabs button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  border: none;
+  cursor: pointer;
+}
+
+.password-tabs .active {
+  background: #111827;
+  color: white;
+}
+
+/* Inputs */
+
+.password-modal input {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* Actions */
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+}
+

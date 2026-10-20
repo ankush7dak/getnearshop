@@ -1,0 +1,151 @@
+.navbar {
+      top: 0px;
+    left: 0px;
+    width: 100vw;
+    z-index: 1000;
+    background: white;
+    position: absolute;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* INNER FLEX */
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 10px 20px;
+  width: 100%;
+}
+
+/* LEFT */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e88e5;
+  text-decoration: none;
+}
+
+/* SEARCH */
+.navbar-search {
+  flex: 1;
+  max-width: 450px;
+  margin: 0 20px;
+}
+
+.navbar-search input {
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+/* RIGHT */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.icon-btn {
+  position: relative;
+  font-size: 1.3rem;
+  color: #444;
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+/* PROFILE */
+.profile-wrapper {
+  position: relative;
+}
+
+.profile-btn {
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* DROPDOWN */
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: 45px;
+  background: white;
+  width: 200px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-dropdown a,
+.logout-btn {
+  padding: 12px 15px;
+  text-decoration: none;
+  color: #333;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-dropdown a:hover,
+.logout-btn:hover {
+  background: #f5f5f5;
+}
+
+.logout-btn {
+  color: red;
+  font-weight: 600;
+}
+
+.profile-dropdown hr {
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+  .navbar-search {
+    display: none;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-inner {
+    padding: 8px 12px;
+  }
+
+  .icon-btn {
+    font-size: 1.1rem;
+  }
+}

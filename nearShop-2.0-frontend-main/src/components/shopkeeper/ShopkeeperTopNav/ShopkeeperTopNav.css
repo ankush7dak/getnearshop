@@ -1,0 +1,160 @@
+.sk-topnav {
+  height: 64px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0px;
+  z-index: 500;
+  width: 100vw;
+}
+
+
+
+/* LEFT */
+
+.sk-topnav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 22px;
+  color: #2563eb;
+}
+
+/* RIGHT */
+
+.sk-topnav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* STATUS BUTTON */
+
+.shop-status-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.shop-status-btn.open {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.shop-status-btn.closed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ICON BUTTON */
+
+.icon-btn {
+  position: relative;
+  font-size: 18px;
+  color: #374151;
+  background: #f3f4f6;
+  padding: 8px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  transition: 0.2s;
+}
+
+.icon-btn:hover {
+  background: #e5e7eb;
+}
+
+/* BADGE */
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #dc2626;
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+/* PROFILE */
+
+.profile-wrapper {
+  position: relative;
+}
+
+.profile-btn {
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #374151;
+}
+
+/* DROPDOWN */
+
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: 46px;
+  background: white;
+  min-width: 180px;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-dropdown a {
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111827;
+  font-size: 14px;
+}
+
+.profile-dropdown a:hover {
+  background: #f3f4f6;
+}
+
+.profile-dropdown hr {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.logout-btn {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #fecaca;
+}
+
+/* MOBILE */
+
+@media (max-width: 640px) {
+  .sk-topnav h2 {
+    font-size: 16px;
+  }
+
+  .shop-status-btn {
+    display: none;
+  }
+}

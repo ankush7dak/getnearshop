@@ -1,0 +1,367 @@
+
+/* ============================
+   PAGE CONTAINER
+============================ */
+
+.notification-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 24px 16px;
+  position: relative;
+}
+
+.nearshop-notifications-page {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* ============================
+   HEADER
+============================ */
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.notifications-header h2 {
+  font-size: 28px;
+  margin: 0 0 6px;
+  color: #111827;
+}
+
+.notifications-header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+.notifications-header button {
+  background: #198754;
+  color: white;
+  border: none;
+  padding: 11px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.notifications-header button:hover {
+  background: #157347;
+}
+
+/* ============================
+   TABS
+============================ */
+
+.notification-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.notification-tabs button {
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.notification-tabs button:hover {
+  background: #ecfdf5;
+}
+
+.notification-tabs button.active {
+  background: #198754;
+  border-color: #198754;
+  color: white;
+}
+
+/* ============================
+   NOTIFICATION LIST
+============================ */
+
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+/* ============================
+   NOTIFICATION CARD
+============================ */
+
+.notification-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  width: 100%;
+  box-sizing: border-box;
+  padding: 18px;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+
+  transition: box-shadow 0.2s ease;
+}
+
+.notification-card:hover {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.07);
+}
+
+.notification-card.unread {
+  border-left: 4px solid #198754;
+  background: #f5fbf7;
+}
+
+/* ============================
+   LEFT CONTENT
+============================ */
+
+.notification-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-left > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-left h4 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.notification-left p {
+  margin: 0 0 8px;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.notification-left small {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* ============================
+   CATEGORY BADGES
+============================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge.orders {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge.offers {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge.system {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* ============================
+   ACTION BUTTONS
+============================ */
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.notification-actions button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.notification-actions button:hover {
+  background: #e5e7eb;
+}
+
+.notification-actions button.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.notification-actions button.danger:hover {
+  background: #fecaca;
+}
+
+/* ============================
+   EMPTY STATE
+============================ */
+
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+  color: #6b7280;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+}
+
+/* ============================
+   TABLET
+============================ */
+
+@media (max-width: 768px) {
+  .notification-container {
+    padding: 20px 14px;
+  }
+
+  .nearshop-notifications-page {
+    max-width: 100%;
+  }
+
+  .notification-card {
+    align-items: flex-start;
+    gap: 14px;
+    padding: 15px;
+  }
+
+  .notification-left {
+    gap: 10px;
+  }
+
+  .notification-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ============================
+   MOBILE
+============================ */
+
+@media (max-width: 600px) {
+  .notification-container {
+    padding: 16px 12px;
+  }
+
+  .notifications-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .notifications-header h2 {
+    font-size: 24px;
+  }
+
+  .notifications-header button {
+    width: 100%;
+  }
+
+  .notification-tabs {
+    gap: 8px;
+  }
+
+  .notification-tabs button {
+    padding: 8px 13px;
+  }
+
+  .notification-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .notification-left {
+    width: 100%;
+  }
+
+  .notification-left h4 {
+    font-size: 15px;
+  }
+
+  .notification-left p {
+    font-size: 13px;
+  }
+
+  .notification-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .empty-state {
+    padding: 36px 12px;
+  }
+}
+
+/* ============================
+   VERY SMALL PHONES
+============================ */
+
+@media (max-width: 360px) {
+  .notification-left {
+    flex-direction: column;
+  }
+
+  .notification-actions {
+    justify-content: flex-start;
+  }
+}

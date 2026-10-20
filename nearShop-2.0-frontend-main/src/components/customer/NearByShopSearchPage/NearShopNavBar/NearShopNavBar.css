@@ -1,0 +1,64 @@
+.nearshop-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.nearshop-nav-inner {
+  display: flex;
+    /* grid-template-columns
+specifies, as a space-separated track list, the line names and track sizing functions of the grid.
+
+Widely available across major browsers (Baseline since April 2020)
+Learn more
+
+Don't show
+: 180px 1fr 180px 140px; */
+    gap: 12px;
+    padding: 12px 20px;
+    align-items: center;
+    width: 100vw;
+}
+
+/* BRAND */
+
+.nav-brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* INPUTS */
+
+.nav-search,
+.nav-select {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+
+  font-size: 14px;
+  outline: none;
+}
+
+.nav-search:focus,
+.nav-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+  .nearshop-nav-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-brand {
+    text-align: center;
+  }
+}

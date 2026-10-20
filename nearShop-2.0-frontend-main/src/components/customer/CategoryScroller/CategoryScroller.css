@@ -1,0 +1,98 @@
+/* OUTER CONTAINER */
+.nearshop-category-outer {
+  width: 90%;
+    margin: 0 auto;
+    position: absolute;
+    padding: 0 46px;
+    box-sizing: border-box;
+    overflow: hidden;
+    top: 16vh;
+    left: 37px;
+}
+
+/* INNER WRAPPER */
+.nearshop-category-wrapper {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* SCROLL AREA */
+.nearshop-category-list {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  width: 100%;
+  padding: 12px 6px;
+  scrollbar-width: none;
+}
+
+.category-pill{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.nearshop-category-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* ARROWS */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scroll-btn.left {
+  left: 6px;     /* inside padding */
+}
+
+.scroll-btn.right {
+  right: 6px;
+}
+
+.scroll-btn:hover {
+  background: #f3f4f6;
+}
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .nearshop-category-outer {
+    width: 95%;
+    padding: 0 38px;
+  }
+
+  .scroll-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .category-pill {
+    min-width: 90px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 640px) {
+    .nearshop-category-outer {
+            top: 11vh;
+      left: -2px;
+
+}
+}

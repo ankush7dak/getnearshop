@@ -1,0 +1,25 @@
+/* logout.css */
+.logout {
+  background-color: #ff4d4f; /* Red button */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.logout:hover {
+  background-color: #ff7875;
+}
+
+.logout:active {
+  transform: scale(0.95);
+}
+
+.logout:disabled {
+  background-color: #ffa39e;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
