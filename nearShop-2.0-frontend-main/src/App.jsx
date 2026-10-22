@@ -26,6 +26,7 @@ import ShopkeeperProfile from './components/shopkeeper/ShopkeeperProfile/Shopkee
 import ShopRegistration from './components/shopkeeper/ShopRegistration/ShopRegistration';
 import GetNewRole from './components/LoginSignup/getNewRole/GetNewRole';
 import NearShopNavBar from './components/customer/NearByShopSearchPage/NearShopNavBar/NearShopNavBar';
+import MyCustomers from './components/shopkeeper/ShopkeeperCustomers/MyCustomers';
 
 
 function App() {
@@ -145,6 +146,14 @@ function App() {
           <ProtectedRoute allowedRoles={[Roles.shopkeeper]}>
             {/* <HamburgerMenu></HamburgerMenu> */}
             <ShopkeeperLowStock></ShopkeeperLowStock>
+          </ProtectedRoute>
+        }
+        />
+          <Route path="/shopkeeper/mycustomers" element={
+          <ProtectedRoute allowedRoles={[Roles.shopkeeper]}>
+            {/* <HamburgerMenu></HamburgerMenu> */}
+             
+            <MyCustomers></MyCustomers>
           </ProtectedRoute>
         }
         />

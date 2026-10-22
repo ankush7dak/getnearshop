@@ -105,20 +105,20 @@ export default function ShopkeeperOrders() {
 
     try {
       if (action === "accept") {
-        await axios.patch(
-          `${API}/${orderId}/accept`,
+        await axios.post(
+          `${LINKS.API_BASE_URL}/api/shop/${orderId}/accept`,
           {},
           { withCredentials: true }
         );
       } else if (action === "reject") {
-        await axios.patch(
-          `${API}/${orderId}/reject`,
+        await axios.post(
+          `${LINKS.API_BASE_URL}/api/shop/${orderId}/reject`,
           {},
           { withCredentials: true }
         );
       } else if (action === "status") {
-        await axios.patch(
-          `${API}/${orderId}/status`,
+        await axios.post(
+          `${LINKS.API_BASE_URL}/api/shop/${orderId}/status`,
           { status },
           { withCredentials: true }
         );
