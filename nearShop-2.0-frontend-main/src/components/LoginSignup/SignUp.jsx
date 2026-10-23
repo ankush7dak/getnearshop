@@ -167,7 +167,7 @@ const SignUp = () => {
               <p className="signup-p">{signUpSuccess}</p>
             </div>
             {signUpSuccess =="" && <div className="button-container">
-              <button disabled={loading}>
+              <button disabled={loading} onClick={verifyOtp}>
                 {loading ? "Verifying..." : "Verify & Continue"}
               </button>
 

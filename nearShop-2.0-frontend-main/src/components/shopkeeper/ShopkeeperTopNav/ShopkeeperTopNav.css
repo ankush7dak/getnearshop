@@ -12,6 +12,11 @@
   width: 100vw;
 }
 
+.shopname{
+  font-size: smaller;
+
+}
+
 
 
 /* LEFT */
@@ -20,6 +25,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+
 }
 
 .logo-icon {

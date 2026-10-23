@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import "./ShopkeeperInventory.css";
+
 import {
   FaSearch,
   FaDownload,
@@ -7,521 +9,1033 @@ import {
   FaEyeSlash,
   FaEye,
   FaBoxes,
-  FaCross
+  FaEdit,
+  FaTimes,
+  FaSave,
+  FaImage,
+  FaCheck,
+  FaExclamationTriangle,
+  FaPlus,
+  FaBoxOpen
 } from "react-icons/fa";
+
 import ShopkeeperTopNav from "../ShopkeeperTopNav/ShopkeeperTopNav";
 import axios from "axios";
 import { LINKS } from "../../../constants/LinksUtility";
 import Loading from "../../Loading/Loading";
 
 export default function ShopkeeperInventoryPro() {
-
-  const [items, setItems] = useState([]);
+  const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("ALL");
   const [stockFilter, setStockFilter] = useState("ALL");
   const [sort, setSort] = useState("added");
+
   const [selected, setSelected] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [size] = useState(8);
   const [hasMore, setHasMore] = useState(true);
 
-
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
   const [imageFile, setImageFile] = useState(null);
-  const [previewImage, setPreviewImage] = useState("");
-  const categories = ["Bakery Items", ...new Set(items.map(i => i.subcategoryName).filter(name => name != null)), ...new Set(items.map(i => i.shopSubcategoryName).filter(name => name != null))];
-  const [filtered, setFiltered] = useState([]);
   const [subCategories, setSubcategories] = useState([]);
-  // fetching inventory data here
-  const fetchAllInventoryData = async () => {
+
+  const containerRef = useRef(null);
+  const loadingRef = useRef(false);
+  const pageRef = useRef(0);
+  const hasMoreRef = useRef(true);
+
+  // ---------------------------------------
+  // Fetch inventory
+  // ---------------------------------------
+
+  const fetchAllInventoryData = useCallback(async (pageNumber = 0) => {
+    if (loadingRef.current) return;
+
     try {
+      loadingRef.current = true;
       setLoading(true);
-      const res = await axios.get(`${LINKS.API_BASE_URL}/api/shop/getAllInvertoryData`,
+
+      const res = await axios.get(
+        `${LINKS.API_BASE_URL}/api/shop/getAllInvertoryData`,
         {
           withCredentials: true,
           params: {
-            page,
+            page: pageNumber,
             size,
             search,
-            category
+            category: category === "ALL" ? "" : category
           },
           headers: {
             "Content-Type": "application/json"
           }
-        });
-      console.log(res.data);
-      const newItems = res.data.productDTOList;
+        }
+      );
 
-      if (page === 0) {
-        setFiltered(newItems); // ✅ replace on reset
-      } else {
-        setFiltered(prev => [...prev, ...newItems]); // ✅ append
-      }
-      setHasMore(!res.data.isLastPage);
-    } catch (e) {
-      console.log(e);
+      const newItems = res.data.productDTOList || [];
+      const isLastPage = res.data.isLastPage;
+
+      setFiltered((prev) =>
+        pageNumber === 0 ? newItems : [...prev, ...newItems]
+      );
+
+      hasMoreRef.current = !isLastPage;
+      setHasMore(!isLastPage);
+
+      pageRef.current = pageNumber;
+      setPage(pageNumber);
+    } catch (error) {
+      console.error("Inventory fetch failed:", error);
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
     }
-    setLoading(false);
-  }
+  }, [search, category, size]);
 
-  useEffect(() => {
-    fetchAllInventoryData();
-  }, [page, search, category]);
-
+  // Reset inventory when search or category changes
   useEffect(() => {
     setFiltered([]);
+    setSelected([]);
+
+    pageRef.current = 0;
+    hasMoreRef.current = true;
+
     setPage(0);
     setHasMore(true);
-  }, [search, category]);
-  const containerRef = useRef();
+
+    fetchAllInventoryData(0);
+  }, [search, category, fetchAllInventoryData]);
+
+  // ---------------------------------------
+  // Infinite scrolling
+  // ---------------------------------------
 
   useEffect(() => {
     const div = containerRef.current;
+    if (!div) return;
 
     const handleScroll = () => {
-      if (!div) return;
       const isBottom =
-        div.scrollTop + div.clientHeight >= div.scrollHeight - 50;
-      console.log(div.scrollTop + div.clientHeight + " " + div.scrollHeight - 50)
-      if (isBottom && hasMore && !loading) {
-        console.log("🔥 Load next page:", page + 1);
-        setPage(prev => prev + 1)
+        div.scrollTop + div.clientHeight >= div.scrollHeight - 80;
+
+      if (
+        isBottom &&
+        hasMoreRef.current &&
+        !loadingRef.current
+      ) {
+        const nextPage = pageRef.current + 1;
+        fetchAllInventoryData(nextPage);
       }
     };
-    div.addEventListener("scroll", handleScroll);
-    return () => div.removeEventListener("scroll", handleScroll);
-  }, [hasMore, loading]);
 
-  const fetchAllShopSubCategories = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${LINKS.API_BASE_URL}/api/shop/getShopSubCategories`,
-        {
-          withCredentials: true,
-        }
-      );
-      console.log(res.data);
-      setSubcategories(res.data);
-    } catch (e) {
-      console.log(e);
-    }
-    setLoading(false);
-  }
+    div.addEventListener("scroll", handleScroll);
+
+    return () => {
+      div.removeEventListener("scroll", handleScroll);
+    };
+  }, [fetchAllInventoryData]);
+
+  // ---------------------------------------
+  // Fetch shop subcategories
+  // ---------------------------------------
 
   useEffect(() => {
+    const fetchAllShopSubCategories = async () => {
+      try {
+        const res = await axios.get(
+          `${LINKS.API_BASE_URL}/api/shop/getShopSubCategories`,
+          {
+            withCredentials: true
+          }
+        );
+
+        setSubcategories(res.data || []);
+      } catch (error) {
+        console.error("Subcategory fetch failed:", error);
+      }
+    };
+
     fetchAllShopSubCategories();
   }, []);
 
-  const handleImageUpload = (e, productId) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImageFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    setEditData(prev => ({
-      ...prev,
-      previewUrl: previewUrl
-    }));
+  // ---------------------------------------
+  // Category options
+  // ---------------------------------------
 
-  }
+  const categories = useMemo(() => {
+    const names = [
+      ...filtered.map((item) => item.subcategoryName),
+      ...filtered.map((item) => item.shopSubcategoryName),
+      ...subCategories
+    ];
 
-  // const filtered = useMemo(() => {
-  //   let data = [...items];
+    return [...new Set(names.filter(Boolean))];
+  }, [filtered, subCategories]);
 
-  //   if (search)
-  //     data = data.filter(
-  //       i =>
-  //         i.name.toLowerCase().includes(search.toLowerCase())
-  //     );
+  // ---------------------------------------
+  // Client-side stock filtering and sorting
+  // ---------------------------------------
 
+  const displayedItems = useMemo(() => {
+    let data = [...filtered];
 
-  //   if (category !== "ALL") {
-  //     data = data.filter(i => i.subcategoryName == category ||
-  //       i.shopSubcategoryName == category);
-  //   }
+    if (stockFilter === "LOW") {
+      data = data.filter(
+        (item) => Number(item.stock) > 0 && Number(item.stock) <= 5
+      );
+    }
 
-  //   if (stockFilter === "LOW")
-  //     data = data.filter(i => i.stock > 0 && i.stock <= 5);
+    if (stockFilter === "OUT") {
+      data = data.filter((item) => Number(item.stock) === 0);
+    }
 
-  //   if (stockFilter === "OUT")
-  //     data = data.filter(i => i.stock === 0);
+    if (sort === "price") {
+      data.sort((a, b) => Number(b.price) - Number(a.price));
+    }
 
-  //   if (sort === "price") data.sort((a, b) => b.price - a.price);
-  //   if (sort === "stock") data.sort((a, b) => b.stock - a.stock);
-  //   if (sort === "added")
-  //     data.sort((a, b) => new Date(b.added) - new Date(a.added));
+    if (sort === "stock") {
+      data.sort((a, b) => Number(b.stock) - Number(a.stock));
+    }
 
-  //   return data;
-  // }, [items, search, category, stockFilter, sort]);
+    if (sort === "added") {
+      data.sort(
+        (a, b) =>
+          new Date(b.added || 0) - new Date(a.added || 0)
+      );
+    }
 
-  const toggleActive = productId => {
-    setFiltered(prev =>
-      prev.map(i => (i.productId === productId ? { ...i, isAvailable: !i.isAvailable } : i))
+    return data;
+  }, [filtered, stockFilter, sort]);
+
+  // ---------------------------------------
+  // Selection
+  // ---------------------------------------
+
+  const toggleSelect = (productId) => {
+    setSelected((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
     );
   };
 
+  const selectAll = () => {
+    const visibleIds = displayedItems.map((item) => item.productId);
+
+    const allSelected =
+      visibleIds.length > 0 &&
+      visibleIds.every((id) => selected.includes(id));
+
+    if (allSelected) {
+      setSelected((prev) =>
+        prev.filter((id) => !visibleIds.includes(id))
+      );
+    } else {
+      setSelected((prev) => [
+        ...new Set([...prev, ...visibleIds])
+      ]);
+    }
+  };
+
+  // ---------------------------------------
+  // Availability toggle
+  // ---------------------------------------
+
+  const toggleActive = (productId) => {
+    setFiltered((prev) =>
+      prev.map((item) =>
+        item.productId === productId
+          ? {
+              ...item,
+              isAvailable: !item.isAvailable
+            }
+          : item
+      )
+    );
+
+    setEditData((prev) =>
+      prev.productId === productId
+        ? {
+            ...prev,
+            isAvailable: !prev.isAvailable
+          }
+        : prev
+    );
+  };
+
+  // ---------------------------------------
+  // Bulk delete
+  // ---------------------------------------
+
   const bulkDelete = () => {
+    if (selected.length === 0) return;
+
     if (!window.confirm("Delete selected products?")) return;
-    setItems(prev => prev.filter(i => !selected.includes(i.productId)));
+
+    // Local removal only.
+    // Connect your delete API here for permanent deletion.
+
+    setFiltered((prev) =>
+      prev.filter((item) => !selected.includes(item.productId))
+    );
+
     setSelected([]);
   };
 
-  const handleEdit = item => {
+  // ---------------------------------------
+  // Edit product
+  // ---------------------------------------
+
+  const handleEdit = (item) => {
     setEditId(item.productId);
-    setEditData({ ...item });
+    setEditData({
+      ...item,
+      previewUrl: ""
+    });
+
+    setImageFile(null);
   };
 
   const handleChange = (field, value) => {
-    setEditData(prev => ({
+    setEditData((prev) => ({
       ...prev,
       [field]: value
     }));
   };
 
-  // useEffect(() => {
-  //   const div = containerRef.current;
+  const handleImageUpload = (event) => {
+    const file = event.target.files?.[0];
 
-  //   const handleScroll = () => {
-  //     if (
-  //       div.scrollTop + div.clientHeight >= div.scrollHeight - 50 &&
-  //       hasMore &&
-  //       !loading
-  //     ) {
-  //       setPage(prev => prev + 1);
-  //     }
-  //   };
+    if (!file) return;
 
-  //   useEffect(() => {
-  //     setItems([]);
-  //     setPage(0);
-  //     setHasMore(true);
-  //   }, [search, category, stockFilter]);
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file.");
+      return;
+    }
 
-  //   useEffect(() => {
-  //     fetchAllInventoryData();
-  //   }, [page]);
+    setImageFile(file);
 
-  //   div.addEventListener("scroll", handleScroll);
-  //   return () => div.removeEventListener("scroll", handleScroll);
-  // }, [hasMore, loading]);
+    const previewUrl = URL.createObjectURL(file);
+
+    setEditData((prev) => ({
+      ...prev,
+      previewUrl
+    }));
+  };
+
+  // ---------------------------------------
+  // Update product
+  // ---------------------------------------
 
   const handleUpdate = async () => {
-
     try {
       setLoading(true);
+
       const payload = {
         productId: editData.productId,
         name: editData.name,
         price: Number(editData.price),
         cost: Number(editData.cost),
-        description: editData.description,
+        description: editData.description || "",
         stock: Number(editData.stock),
         weight: editData.weight,
-        isAvailable: editData.isAvailable,
-        productImage: imageFile
+        isAvailable: editData.isAvailable
       };
-      const data = new FormData();
-      Object.keys(payload).forEach((key) => {
-        const value = payload[key];
+
+      const formData = new FormData();
+
+      Object.entries(payload).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          data.append(key, value); // FormData handles files automatically
+          formData.append(key, value);
         }
       });
-      /* Backend API call */
-      console.log("Edit Data " + editData);
-      for (let key in editData) {
-        console.log(key, editData[key]);
+
+      if (imageFile) {
+        formData.append("productImage", imageFile);
       }
-      const res = await axios.post(`${LINKS.API_BASE_URL}/api/shop/updateProduct`, data,
+
+      const res = await axios.post(
+        `${LINKS.API_BASE_URL}/api/shop/updateProduct`,
+        formData,
         {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data"
-          }
-        },
+          withCredentials: true
+        }
       );
 
-
-      setFiltered(prev =>
-        prev.map(i =>
-          i.productId === editId
-            ? { ...editData, imageLink: res.data.imageLink }
-            : i
-        ));
+      setFiltered((prev) =>
+        prev.map((item) =>
+          item.productId === editId
+            ? {
+                ...item,
+                ...payload,
+                imageLink:
+                  res.data.imageLink || item.imageLink
+              }
+            : item
+        )
+      );
 
       setEditId(null);
+      setEditData({});
       setImageFile(null);
-
-    } catch (e) {
-      console.log("Update failed");
+    } catch (error) {
+      console.error("Update failed:", error);
+      alert("Unable to update product. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-
   };
+
+  const cancelEdit = () => {
+    setEditId(null);
+    setEditData({});
+    setImageFile(null);
+  };
+
+  // ---------------------------------------
+  // Export inventory to CSV
+  // ---------------------------------------
+
+  const exportInventory = () => {
+    if (displayedItems.length === 0) {
+      alert("No products available to export.");
+      return;
+    }
+
+    const headers = [
+      "Product ID",
+      "Product Name",
+      "Category",
+      "Selling Price",
+      "Cost Price",
+      "Stock",
+      "Availability",
+      "Description"
+    ];
+
+    const rows = displayedItems.map((item) => [
+      item.productId,
+      item.name,
+      item.subcategoryName || item.shopSubcategoryName || "",
+      item.price,
+      item.cost,
+      item.stock,
+      item.isAvailable ? "Available" : "Unavailable",
+      item.description || ""
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((value) =>
+            `"${String(value ?? "").replace(/"/g, '""')}"`
+          )
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "nearshop-inventory.csv";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  // ---------------------------------------
+  // Product card
+  // ---------------------------------------
+
+  const renderProductCard = (item) => {
+    const isEditing = editId === item.productId;
+
+    const price = Number(
+      isEditing ? editData.price : item.price
+    ) || 0;
+
+    const cost = Number(
+      isEditing ? editData.cost : item.cost
+    ) || 0;
+
+    const stock = Number(
+      isEditing ? editData.stock : item.stock
+    ) || 0;
+
+    const margin =
+      price > 0
+        ? (((price - cost) / price) * 100).toFixed(1)
+        : "0.0";
+
+    const isAvailable = isEditing
+      ? editData.isAvailable
+      : item.isAvailable;
+
+    const stockStatus =
+      stock === 0
+        ? "out"
+        : stock <= 5
+          ? "low"
+          : "good";
+
+    const categoryName =
+      item.subcategoryName ||
+      item.shopSubcategoryName ||
+      "Uncategorized";
+
+    return (
+      <article
+        className={`product-card ${
+          stock === 0 ? "product-card-out" : ""
+        } ${isEditing ? "product-card-editing" : ""}`}
+        key={item.productId}
+      >
+        {/* Card Header */}
+
+        <div className="product-card-header">
+          <label className="product-select">
+            <input
+              type="checkbox"
+              checked={selected.includes(item.productId)}
+              onChange={() => toggleSelect(item.productId)}
+            />
+
+            <span>Select</span>
+          </label>
+
+          <span className="product-id">
+            ID: {item.productId}
+          </span>
+        </div>
+
+        {/* Product Image */}
+
+        <div className="product-card-image">
+          <img
+            src={
+              isEditing
+                ? editData.previewUrl || item.imageLink
+                : item.imageLink
+            }
+            alt={item.name}
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+
+          <div className="image-fallback">
+            <FaImage />
+          </div>
+
+          {isEditing && (
+            <label className="image-upload-button">
+              <FaImage />
+              Change Image
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+            </label>
+          )}
+
+          {!isEditing && (
+            <span
+              className={`availability-badge ${
+                isAvailable ? "available" : "unavailable"
+              }`}
+            >
+              {isAvailable ? (
+                <>
+                  <FaCheck /> Available
+                </>
+              ) : (
+                <>
+                  <FaEyeSlash /> Unavailable
+                </>
+              )}
+            </span>
+          )}
+        </div>
+
+        {/* Product Details */}
+
+        <div className="product-card-body">
+          <div className="product-title-row">
+            <div className="product-title">
+              <FaBoxes className="product-title-icon" />
+
+              {isEditing ? (
+                <input
+                  className="product-name-input"
+                  value={editData.name || ""}
+                  onChange={(event) =>
+                    handleChange("name", event.target.value)
+                  }
+                  placeholder="Product name"
+                />
+              ) : (
+                <h3>{item.name}</h3>
+              )}
+            </div>
+          </div>
+
+          <span className="product-category">
+            {categoryName}
+          </span>
+
+          {/* Pricing */}
+
+          <div className="product-pricing">
+            <div className="price-block">
+              <span className="price-label">
+                Selling Price
+              </span>
+
+              {isEditing ? (
+                <div className="price-input-wrapper">
+                  <span>₹</span>
+
+                  <input
+                    type="number"
+                    min="0"
+                    value={editData.price ?? ""}
+                    onChange={(event) =>
+                      handleChange("price", event.target.value)
+                    }
+                  />
+                </div>
+              ) : (
+                <strong className="selling-price">
+                  ₹{price.toLocaleString("en-IN")}
+                </strong>
+              )}
+            </div>
+
+            <div className="price-block">
+              <span className="price-label">
+                Cost Price
+              </span>
+
+              {isEditing ? (
+                <div className="price-input-wrapper">
+                  <span>₹</span>
+
+                  <input
+                    type="number"
+                    min="0"
+                    value={editData.cost ?? ""}
+                    onChange={(event) =>
+                      handleChange("cost", event.target.value)
+                    }
+                  />
+                </div>
+              ) : (
+                <strong className="cost-price">
+                  ₹{cost.toLocaleString("en-IN")}
+                </strong>
+              )}
+            </div>
+          </div>
+
+          {/* Margin */}
+
+          <div className="product-margin">
+            <div>
+              <span>Profit Margin</span>
+              <strong>{margin}%</strong>
+            </div>
+
+            <div className="margin-progress">
+              <span
+                style={{
+                  width: `${Math.max(
+                    0,
+                    Math.min(100, Number(margin))
+                  )}%`
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Stock */}
+
+          <div className="product-stock-row">
+            <div className="stock-info">
+              <span className="stock-label">
+                Available Stock
+              </span>
+
+              {isEditing ? (
+                <input
+                  className="stock-input"
+                  type="number"
+                  min="0"
+                  value={editData.stock ?? ""}
+                  onChange={(event) =>
+                    handleChange("stock", event.target.value)
+                  }
+                />
+              ) : (
+                <strong>{stock} units</strong>
+              )}
+            </div>
+
+            <span className={`stock-badge ${stockStatus}`}>
+              {stockStatus === "out"
+                ? "Out of Stock"
+                : stockStatus === "low"
+                  ? "Low Stock"
+                  : "In Stock"}
+            </span>
+          </div>
+
+          {/* Description */}
+
+          <div className="product-description">
+            <span>Description</span>
+
+            {isEditing ? (
+              <textarea
+                value={editData.description || ""}
+                onChange={(event) =>
+                  handleChange(
+                    "description",
+                    event.target.value
+                  )
+                }
+                placeholder="Product description"
+                rows={3}
+              />
+            ) : (
+              <p>
+                {item.description || "No description available."}
+              </p>
+            )}
+          </div>
+
+          {/* Availability */}
+
+          <div className="product-availability-row">
+            <div>
+              <span className="availability-title">
+                Product Visibility
+              </span>
+
+              <small>
+                {isAvailable
+                  ? "Visible to customers"
+                  : "Hidden from customers"}
+              </small>
+            </div>
+
+            <button
+              type="button"
+              className={`availability-toggle ${
+                isAvailable ? "active" : ""
+              }`}
+              onClick={() => {
+                if (isEditing) {
+                  handleChange(
+                    "isAvailable",
+                    !editData.isAvailable
+                  );
+                } else {
+                  toggleActive(item.productId);
+                }
+              }}
+              aria-label="Toggle product availability"
+            >
+              <span />
+            </button>
+          </div>
+        </div>
+
+        {/* Actions */}
+
+        <div className="product-card-footer">
+          {isEditing ? (
+            <>
+              <button
+                className="card-action-button save-button"
+                onClick={handleUpdate}
+                disabled={loading}
+              >
+                <FaSave />
+                Save Changes
+              </button>
+
+              <button
+                className="card-action-button cancel-button"
+                onClick={cancelEdit}
+              >
+                <FaTimes />
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button
+              className="card-action-button edit-button"
+              onClick={() => handleEdit(item)}
+            >
+              <FaEdit />
+              Edit Product
+            </button>
+          )}
+        </div>
+      </article>
+    );
+  };
+
+  // ---------------------------------------
+  // Main UI
+  // ---------------------------------------
 
   return (
     <>
       <ShopkeeperTopNav />
 
-      <div className="inventory-pro">
-        {loading && (
-          <Loading></Loading>
-        )}
+      <main className="inventory-pro">
+        {loading && <Loading />}
+
+        {/* Header */}
+
         <header className="inventory-header">
-          <h2>📊 Inventory Control Center</h2>
+          <div className="inventory-heading">
+            <div className="inventory-heading-icon">
+              <FaBoxes />
+            </div>
+
+            <div>
+              <h2>Inventory Management</h2>
+
+              <p>
+                Manage your products, pricing, and stock
+              </p>
+            </div>
+          </div>
 
           {selected.length > 0 && (
             <div className="bulk-actions">
-              <span>{selected.length} selected</span>
+              <span>
+                {selected.length} products selected
+              </span>
+
               <button onClick={bulkDelete}>
-                <FaTrash /> Delete
+                <FaTrash />
+                Delete
               </button>
             </div>
           )}
         </header>
 
-        <div className="inventory-toolbar">
+        {/* Toolbar */}
 
+        <section className="inventory-toolbar">
           <div className="search">
             <FaSearch />
+
             <input
-              placeholder="Search name or SKU..."
+              placeholder="Search products..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
             />
           </div>
 
-          <select value={category} onChange={e => setCategory(e.target.value)}>
-            <option key={'ALL'}>ALL</option>
-            {subCategories.map(c => (
-              <option key={c}>{c}</option>
+          <select
+            value={category}
+            onChange={(event) =>
+              setCategory(event.target.value)
+            }
+          >
+            <option value="ALL">All Categories</option>
+
+            {categories.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
             ))}
           </select>
 
           <select
             value={stockFilter}
-            onChange={e => setStockFilter(e.target.value)}
+            onChange={(event) =>
+              setStockFilter(event.target.value)
+            }
           >
             <option value="ALL">All Stock</option>
             <option value="LOW">Low Stock</option>
             <option value="OUT">Out of Stock</option>
           </select>
 
-          <select value={sort} onChange={e => setSort(e.target.value)}>
+          <select
+            value={sort}
+            onChange={(event) =>
+              setSort(event.target.value)
+            }
+          >
             <option value="added">Newest</option>
             <option value="price">Highest Price</option>
             <option value="stock">Highest Stock</option>
           </select>
 
-          <button className="export">
-            <FaDownload /> Export
+          <button
+            className="export-button"
+            onClick={exportInventory}
+          >
+            <FaDownload />
+            Export
           </button>
+        </section>
 
+        {/* Inventory Summary */}
+
+        <section className="inventory-summary">
+          <div className="summary-item">
+            <div className="summary-icon">
+              <FaBoxes />
+            </div>
+
+            <div>
+              <span>Total Products</span>
+              <strong>{filtered.length}</strong>
+            </div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-icon summary-icon-green">
+              <FaCheck />
+            </div>
+
+            <div>
+              <span>Available</span>
+
+              <strong>
+                {
+                  filtered.filter(
+                    (item) => item.isAvailable
+                  ).length
+                }
+              </strong>
+            </div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-icon summary-icon-orange">
+              <FaExclamationTriangle />
+            </div>
+
+            <div>
+              <span>Low Stock</span>
+
+              <strong>
+                {
+                  filtered.filter(
+                    (item) =>
+                      Number(item.stock) > 0 &&
+                      Number(item.stock) <= 5
+                  ).length
+                }
+              </strong>
+            </div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-icon summary-icon-red">
+              <FaBoxOpen />
+            </div>
+
+            <div>
+              <span>Out of Stock</span>
+
+              <strong>
+                {
+                  filtered.filter(
+                    (item) => Number(item.stock) === 0
+                  ).length
+                }
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        {/* Select All */}
+
+        <div className="inventory-list-heading">
+          <div>
+            <h3>Your Products</h3>
+
+            <p>
+              {displayedItems.length} products displayed
+            </p>
+          </div>
+
+          <label className="select-all">
+            <input
+              type="checkbox"
+              checked={
+                displayedItems.length > 0 &&
+                displayedItems.every((item) =>
+                  selected.includes(item.productId)
+                )
+              }
+              onChange={selectAll}
+            />
+
+            Select All
+          </label>
         </div>
 
-        <div className="table-wrap" ref={containerRef}>
+        {/* Product Cards */}
 
-          <table>
+        <div
+          className="product-card-container"
+          ref={containerRef}
+        >
+          {displayedItems.length > 0 ? (
+            <div className="product-grid">
+              {displayedItems.map(renderProductCard)}
+            </div>
+          ) : (
+            !loading && (
+              <div className="inventory-empty">
+                <div className="empty-icon">
+                  <FaBoxOpen />
+                </div>
 
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    onChange={e =>
-                      setSelected(
-                        e.target.checked ? filtered.map(i => i.productId) : []
-                      )
-                    }
-                    checked={
-                      filtered.length > 0 &&
-                      selected.length === filtered.length
-                    }
-                  />
-                </th>
+                <h3>No products found</h3>
 
-                <th>Product</th>
-                <th>Image</th>
-                <th>Category</th>
-                <th>Selling Price</th>
-                <th>Cost Price</th>
-                <th>Margin</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Description</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+                <p>
+                  Try changing your search or filter options.
+                </p>
+              </div>
+            )
+          )}
 
-            <tbody>
+          {loading && (
+            <div className="inventory-loading">
+              Loading products...
+            </div>
+          )}
 
-              {filtered.map(i => {
-
-                const margin = (((i.price - i.cost) / i.price) * 100).toFixed(0);
-
-                return (
-                  <tr key={i.productId} className={i.stock === 0 ? "out-row" : ""}>
-
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(i.productId)}
-                        onChange={() =>
-                          setSelected(prev =>
-                            prev.includes(i.productId)
-                              ? prev.filter(x => x !== i.productId)
-                              : [...prev, i.productId]
-                          )
-                        }
-                      />
-                    </td>
-
-
-                    <td className="prod">
-                      <FaBoxes />
-                      <span>{i.name}</span>
-                    </td>
-                    <td className="product-image">
-                      <div className="image-container">
-                        {editId == i.productId ? <img src={editData.previewUrl || i.imageLink}
-                          alt="No Image" /> : <img src={i.imageLink}
-                            alt="No Image" />}
-
-
-                        {/* Hidden file input */}
-                        <input
-                          type="file"
-                          id={`fileInput-${i.productId}`}
-                          style={{ display: "none" }}
-                          onChange={(e) => handleImageUpload(e, i.productId)}
-                        />
-
-                        {/* Overlay */}
-                        {editId == i.productId && (<div
-                          className="overlay-text"
-                          onClick={() =>
-                            document.getElementById(`fileInput-${i.productId}`).click()
-                          }
-                        >
-                          Upload New Image
-                        </div>)}
-
-                      </div>
-                    </td>
-                    <td>{(i.subcategoryName != null) ? i.subcategoryName : i.shopSubcategoryName}</td>
-
-                    <td>
-                      {editId === i.productId ? (
-                        <input
-                          type="number"
-                          value={editData.price}
-                          onChange={e => handleChange("price", e.target.value)}
-                        />
-                      ) : (
-                        `₹${i.price}`
-                      )}
-                    </td>
-
-                    <td>
-                      {editId === i.productId ? (
-                        <input
-                          type="number"
-                          value={editData.cost}
-                          onChange={e => handleChange("cost", e.target.value)}
-                        />
-                      ) : (
-                        `₹${i.cost}`
-                      )}
-                    </td>
-
-                    <td>{margin}%</td>
-
-                    <td>
-                      <span
-                        className={
-                          i.stock === 0
-                            ? "out"
-                            : i.stock <= 5
-                              ? "low"
-                              : "ok"
-                        }
-                      >
-                        {editId === i.productId ? (
-                          <input
-                            type="number"
-                            value={editData.stock}
-                            onChange={e => handleChange("stock", e.target.value)}
-                          />
-                        ) : (
-                          `${i.stock}`
-                        )}
-                      </span>
-                    </td>
-
-                    <td>{editId == i.productId ? (
-                      <button
-                        className={`toggle ${i.isAvailable ? "on" : "off"}`}
-                        onClick={() => {
-                          const updated = !i.isAvailable;
-
-                          setEditData(prev => ({
-                            ...prev,
-                            isAvailable: updated
-                          }));
-                        }}
-                      >
-                        {i.isAvailable ? <FaEye /> : <FaEyeSlash />}
-                      </button>) : (
-                      <button
-                        className={`toggle ${i.isAvailable ? "on" : "off"}`}
-                        onClick={() => {
-
-                          editData.isAvailable = i.isAvailable;
-                        }}
-                      >
-                        {i.isAvailable ? <FaEye /> : <FaEyeSlash />}
-                      </button>)
-                    }
-
-                    </td>
-
-                    <td>{editId === i.productId ? (
-                      <input
-                        type="text"
-                        value={editData.description}
-                        onChange={e => handleChange("description", e.target.value)}
-                      />
-                    ) : (
-                      `${i.description}`
-                    )}</td>
-
-                    <td className="actions">
-
-                      {editId === i.productId ? (
-                        <>
-                          <button onClick={handleUpdate}>Update</button>
-                          <div className="cross-btn"><button onClick={() => setEditId(null)}>❌</button></div>
-
-                        </>
-                      ) : (
-                        <button onClick={() => handleEdit(i)}>Edit</button>
-                      )}
-
-                    </td>
-
-                  </tr>
-                );
-              })}
-
-            </tbody>
-
-          </table>
-
+          {!hasMore && displayedItems.length > 0 && (
+            <div className="inventory-end">
+              You have reached the end of your inventory.
+            </div>
+          )}
         </div>
-
-      </div>
+      </main>
     </>
   );
 }

@@ -530,13 +530,13 @@ export default function NearShopSearchPage() {
                   </div>
                 </button>
 
-                <button
+                {/* <button
                   type="button"
                   className="view-shop-btn"
                   onClick={() => handleShopDetails(shop)}
                 >
                   View shop
-                </button>
+                </button> */}
               </article>
             );
           })}

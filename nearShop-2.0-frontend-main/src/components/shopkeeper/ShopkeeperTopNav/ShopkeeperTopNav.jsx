@@ -102,7 +102,7 @@ export default function ShopkeeperTopNav() {
       <div className="sk-topnav-left">
         <FaStore className="logo-icon" />
 
-        <h2>
+        <h2 className="shopname">
           {loading
             ? "Loading shop..."
             : shopName || "My Shop"}
