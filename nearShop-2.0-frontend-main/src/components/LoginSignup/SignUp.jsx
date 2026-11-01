@@ -22,6 +22,7 @@ const SignUp = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [passwordMatch,setPasswordMatch] = useState("");
 
   // ---------------- SEND OTP ----------------
   const sendOtp = async () => {
@@ -29,6 +30,9 @@ const SignUp = () => {
 
     if (!/^[6-9]\d{9}$/.test(mobile)) {
       return setError("Enter valid 10 digit mobile number");
+    }
+    if(password != passwordMatch){
+      return setError("Password not matched!!");
     }
 
     try {
@@ -55,6 +59,7 @@ const SignUp = () => {
     if (otp.length !== 6) {
       return setError("Enter valid OTP");
     }
+
 
     try {
       setLoading(true);
@@ -90,7 +95,7 @@ const SignUp = () => {
             />
 
             <input
-              type="tel"
+              type="number"
               placeholder="Mobile Number"
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
@@ -109,6 +114,13 @@ const SignUp = () => {
               placeholder="Enter Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={passwordMatch}
+              onChange={(e) => setPasswordMatch(e.target.value)}
               required
             />
 
@@ -148,7 +160,7 @@ const SignUp = () => {
             </p>
 
             <input
-              type="text"
+              type="number"
               placeholder="Enter OTP"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}

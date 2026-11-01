@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./MyOrders.css";
+import { LINKS } from "../../../constants/LinksUtility";
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -19,7 +20,7 @@ export default function MyOrders() {
         setError("");
 
         const response = await axios.get(
-          "http://localhost:8081/api/customer/my-orders",
+          `${LINKS.API_BASE_URL}/api/customer/my-orders}`,
           {
             withCredentials: true,
           }

@@ -16,7 +16,6 @@ const Login = () => {
   const [loader, setLoader] = useState(false);
   const { user, setUser } = useContext(AuthContext);
   const [loading,setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -24,9 +23,9 @@ const Login = () => {
     setError("");
     setLoader(true);
     setLoading(true);
-
+    
     try {
-      const res = await axios.post(
+       const res =  await axios.post(
         `${LINKS.API_BASE_URL}/auth/login`,
         { mobile, password, loginRole }, // send role to backend
         { withCredentials: true }
@@ -52,7 +51,9 @@ const Login = () => {
 
       setLoader(false);
     } catch (err) {
-      setError("Invalid credentials");
+      
+      // setError("Invalid credentials");
+      setError(mobile + loginRole + password + err);
       setLoader(false);
     }finally{
       setLoader(false);
