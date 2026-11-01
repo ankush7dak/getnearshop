@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./logout.css"; // import the CSS file
+import "./Logout.css"; // import the CSS file
 import { LINKS } from "../../constants/LinksUtility";
 import Loading from "../Loading/Loading";
 
