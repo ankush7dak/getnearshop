@@ -20,7 +20,7 @@ export default function MyOrders() {
         setError("");
 
         const response = await axios.get(
-          `${LINKS.API_BASE_URL}/api/customer/my-orders}`,
+          `${LINKS.API_BASE_URL}/api/customer/my-orders`,
           {
             withCredentials: true,
           }

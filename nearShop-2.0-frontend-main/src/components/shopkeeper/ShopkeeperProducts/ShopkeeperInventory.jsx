@@ -738,7 +738,7 @@ export default function ShopkeeperInventoryPro() {
               </small>
             </div>
 
-            <button
+            {isEditing ? (<button
               type="button"
               className={`availability-toggle ${
                 isAvailable ? "active" : ""
@@ -756,7 +756,16 @@ export default function ShopkeeperInventoryPro() {
               aria-label="Toggle product availability"
             >
               <span />
-            </button>
+            </button>) :(<button
+              type="button"
+              className={`availability-toggle ${
+                isAvailable ? "active" : ""
+              }`}
+              
+              aria-label="Toggle product availability"
+            >
+              <span />
+            </button>) }
           </div>
         </div>
 

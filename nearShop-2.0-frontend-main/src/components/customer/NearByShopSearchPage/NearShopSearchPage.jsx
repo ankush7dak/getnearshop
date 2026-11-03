@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { FaStar, FaStore, FaSearch, FaShoppingCart } from "react-icons/fa";
 import axios from "axios";
 import "./NearShopSearchPage.css";
@@ -92,6 +92,15 @@ export default function NearShopSearchPage() {
 
   const navigate = useNavigate();
   const { setShopDetails } = useCustomer();
+
+  // const [products, setProducts] = useState(savedState.products || []);
+//product pagination states
+const [productPage, setProductPage] = useState(0);
+const [hasMoreProducts, setHasMoreProducts] = useState(true);
+const [productsLoading, setProductsLoading] = useState(false);
+
+const observerRef = useRef(null);
+const loadingProductsRef = useRef(false);
 
   // ---------------- FETCH SHOPS ----------------
 
@@ -264,7 +273,7 @@ export default function NearShopSearchPage() {
             page: 0,
             size: 10,
             category: productCategory,
-            search: productQuery,
+            search: productQuery
           },
         }
       );
@@ -312,8 +321,56 @@ export default function NearShopSearchPage() {
   }, [handleGetCartData]);
 
   useEffect(() => {
-    fetchShopProducts();
-  }, [fetchShopProducts]);
+  setProducts([]);
+  setProductPage(0);
+  setHasMoreProducts(true);
+
+  if (observerRef.current) {
+    observerRef.current.disconnect();
+  }
+
+  if (shopId) {
+    fetchShopProducts(0, true);
+  }
+}, [fetchShopProducts, shopId]);
+// ---------------- INFINITE SCROLL ----------------
+
+const lastProductRef = useCallback((node) => {
+
+  if (observerRef.current) {
+    observerRef.current.disconnect();
+  }
+
+  if (!node || !hasMoreProducts || productsLoading) return;
+
+  observerRef.current = new IntersectionObserver(
+    (entries) => {
+
+      if (
+        entries[0].isIntersecting &&
+        !loadingProductsRef.current &&
+        hasMoreProducts
+      ) {
+        fetchShopProducts(productPage + 1);
+      }
+
+    },
+    {
+      root: null,
+      rootMargin: "200px",
+      threshold: 0
+    }
+  );
+
+  observerRef.current.observe(node);
+
+}, [fetchShopProducts, productPage, hasMoreProducts, productsLoading]);
+
+useEffect(() => {
+  return () => {
+    observerRef.current?.disconnect();
+  };
+}, []);
 
   useEffect(() => {
     fetchSelectedShopCategories();
@@ -626,73 +683,98 @@ export default function NearShopSearchPage() {
             <p>Try another search or product category.</p>
           </div>
         ) : (
+          <>
           <div className="product-card-container">
-            {products.map((product) => (
-              <article
-                key={product.productId ?? product.id}
-                className="product-card"
-              >
-                <div className="product-image-wrap">
-                  <img
-                    className="product-image"
-                    loading="lazy"
-                    src={product.imageLink || "/placeholder-product.png"}
-                    alt={product.name}
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = "/placeholder-product.png";
-                    }}
-                  />
-                </div>
 
-                <div className="product-info">
-                  <h3>{product.name}</h3>
-                  {product.description && (
-                    <p className="product-description">
-                      {product.description}
-                    </p>
-                  )}
-                  <p className="product-price">
-                    ₹{Number(product.price).toFixed(2)}
-                  </p>
-                </div>
+  {products.map((product, index) => (
 
-                <div className="cart-controls">
-                  {cart[product.productId] ? (
-                    <>
-                      <button
-                        type="button"
-                        aria-label={`Remove one ${product.name}`}
-                        onClick={() =>
-                          addOrDeleteToCart(product, "delete")
-                        }
-                      >
-                        −
-                      </button>
-                      <span>{cart[product.productId]}</span>
-                      <button
-                        type="button"
-                        aria-label={`Add one ${product.name}`}
-                        onClick={() =>
-                          addOrDeleteToCart(product, "add")
-                        }
-                      >
-                        +
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      className="add-to-cart-btn"
-                      onClick={() => addOrDeleteToCart(product, "add")}
-                    >
-                      Add to cart
-                    </button>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
+    <article
+      key={product.productId ?? product.id}
+      ref={
+        index === products.length - 1
+          ? lastProductRef
+          : null
+      }
+      className="product-card"
+    >
+
+      <div className="product-image-wrap">
+        <img
+          className="product-image"
+          loading="lazy"
+          src={product.imageLink || "/placeholder-product.png"}
+          alt={product.name}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/placeholder-product.png";
+          }}
+        />
+      </div>
+
+      <div className="product-info">
+        <h3>{product.name}</h3>
+
+        {product.description && (
+          <p className="product-description">
+            {product.description}
+          </p>
+        )}
+
+        <p className="product-price">
+          ₹{Number(product.price).toFixed(2)}
+        </p>
+      </div>
+
+      <div className="cart-controls">
+
+        {cart[product.productId] ? (
+          <>
+            <button
+              type="button"
+              onClick={() => addOrDeleteToCart(product, "delete")}
+            >
+              −
+            </button>
+
+            <span>{cart[product.productId]}</span>
+
+            <button
+              type="button"
+              onClick={() => addOrDeleteToCart(product, "add")}
+            >
+              +
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className="add-to-cart-btn"
+            onClick={() => addOrDeleteToCart(product, "add")}
+          >
+            Add to cart
+          </button>
+        )}
+
+      </div>
+
+    </article>
+
+  ))}
+
+</div>
+
+{productsLoading && (
+  <p className="products-loading">
+    Loading more products...
+  </p>
+)}
+
+{!hasMoreProducts && products.length > 0 && (
+  <p className="products-end">
+    You have reached the end of the products.
+  </p>
+)}
+          </>
         )}
       </section>}
     </main>

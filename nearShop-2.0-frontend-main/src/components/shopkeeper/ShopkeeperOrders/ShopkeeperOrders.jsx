@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import {
   FaSearch,
@@ -66,35 +66,97 @@ export default function ShopkeeperOrders() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const fetchOrders = useCallback(async (showLoader = true) => {
-    if (showLoader) {
-      setLoading(true);
+  //pagination states
+const [page, setPage] = useState(0);
+const [hasMore, setHasMore] = useState(true);
+
+const [loadingMore, setLoadingMore] = useState(false);
+
+const observerRef = useRef(null);
+const loadingMoreRef = useRef(false);
+ const fetchOrders = useCallback(async (pageNumber = 0, reset = false) => {
+    if (pageNumber === 0) {
+        reset ? setRefreshing(true) : setLoading(true);
     } else {
-      setRefreshing(true);
+        if (loadingMoreRef.current || !hasMore) return;
+
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
     }
 
     setError("");
 
     try {
-      const response = await axios.get(API, {
-        withCredentials: true,
-      });
+        const response = await axios.get(API, {
+            withCredentials: true,
+            params: {
+                page: pageNumber,
+                size: 8
+            }
+        });
 
-      setOrders(Array.isArray(response.data) ? response.data : []);
+        const data = response.data;
+        const newOrders = data || [];
+
+        setOrders(prev =>
+            reset || pageNumber === 0
+                ? newOrders
+                : [...prev, ...newOrders]
+        );
+
+        setPage(pageNumber);
+        setHasMore(!data.last);
+
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to load orders. Please check your login and backend."
-      );
+        setError(
+            err.response?.data?.message ||
+            "Unable to load orders. Please check your login and backend."
+        );
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+        setLoading(false);
+        setRefreshing(false);
+        setLoadingMore(false);
+        loadingMoreRef.current = false;
     }
-  }, []);
+}, [hasMore]);
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+useEffect(() => {
+    fetchOrders(0, true);
+}, []);
+
+const lastOrderRef = useCallback((node) => {
+    if (loading) return;
+
+    if (observerRef.current) {
+        observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+        (entries) => {
+            if (
+                entries[0].isIntersecting &&
+                hasMore &&
+                !loadingMoreRef.current
+            ) {
+                fetchOrders(page + 1);
+            }
+        },
+        {
+            threshold: 0.1
+        }
+    );
+
+    if (node) {
+        observerRef.current.observe(node);
+    }
+}, [loading, hasMore, page, fetchOrders]);
+
+useEffect(() => {
+    return () => {
+        observerRef.current?.disconnect();
+    };
+}, []);
+
 
   const performAction = async (order, action, status = null) => {
     const orderId = order.orderId;
@@ -119,8 +181,10 @@ export default function ShopkeeperOrders() {
       } else if (action === "status") {
         await axios.post(
           `${LINKS.API_BASE_URL}/api/shop/${orderId}/status`,
-          { status },
-          { withCredentials: true }
+          { },
+          { withCredentials: true,
+            params :{status : status }
+          }
         );
       }
 
@@ -352,13 +416,14 @@ export default function ShopkeeperOrders() {
           </div>
         ) : (
           <section className="orders-grid">
-            {filteredOrders.map((order) => {
+            {filteredOrders.map((order,index) => {
               const status = order.orderStatus || "PLACED";
               const items = Array.isArray(order.items) ? order.items : [];
 
               return (
-                <article className="order-card" key={order.orderId}>
-                  <div className="order-card-head">
+                <article className="order-card" key={order.orderId} ref={index === filteredOrders.length - 6 ? lastOrderRef : null}>
+                  
+                  <div className="order-card-head" >
                     <div>
                       <span className="order-id-label">Order ID</span>
                       <h3>#{order.orderId}</h3>
@@ -530,10 +595,12 @@ export default function ShopkeeperOrders() {
               </div>
 
               {renderActions(selectedOrder)}
+              
             </section>
           </div>
         )}
       </main>
+      
     </>
   );
 }

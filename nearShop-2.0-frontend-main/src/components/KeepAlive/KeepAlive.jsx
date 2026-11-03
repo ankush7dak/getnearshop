@@ -13,7 +13,7 @@ const KeepAlive = () => {
             try {
                 const response = await axios.get(
                     `${API_URL}/api/customer/healthStatus`,
-                    { timeout: 60000 }
+                    { timeout: 20000 }
                 );
 
                 console.log(
@@ -35,7 +35,7 @@ const KeepAlive = () => {
         // Repeat every 7 minutes
         const interval = setInterval(
             sendRequest,
-            7 * 60 * 1000
+            7 * 60 * 100
         );
 
         return () => clearInterval(interval);
