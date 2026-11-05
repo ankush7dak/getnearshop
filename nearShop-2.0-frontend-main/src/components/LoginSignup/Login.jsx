@@ -9,6 +9,7 @@ import "./LoginSignup.css";
 
 import { AuthContext } from "../../contexts/authcontext/AuthProvider";
 import Loading from "../Loading/Loading";
+import GoogleSignIn from "./GoogleSignIn";
 
 const API = LINKS.API_BASE_URL.replace(/\/+$/, "");
 
@@ -137,14 +138,15 @@ const Login = () => {
     <div className="auth-container">
 
       {loading && <Loading />}
-
       <form
         onSubmit={handleLogin}
         className="auth-form"
       >
+        
 
         <h2>Login</h2>
-
+<GoogleSignIn></GoogleSignIn>
+<h1>  </h1>
         {error && (
           <p className="error">{error}</p>
         )}

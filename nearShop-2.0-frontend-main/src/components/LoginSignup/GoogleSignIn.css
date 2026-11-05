@@ -1,0 +1,67 @@
+.google-signin-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.google-role-selection {
+  width: 100%;
+  text-align: center;
+}
+
+.google-role-selection p {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #444;
+}
+.selectRole{
+    width: 20%;
+}
+
+.google-role-options {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.google-role-button {
+  padding: 9px 18px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.google-role-button:hover {
+  border-color: #198754;
+}
+
+.google-role-button.selected {
+  background: #198754;
+  border-color: #198754;
+  color: white;
+}
+
+.google-button-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.google-loading {
+  color: #198754;
+  font-size: 14px;
+}
+
+.google-error {
+  color: #dc3545;
+  font-size: 13px;
+  text-align: center;
+  margin: 0;
+}
