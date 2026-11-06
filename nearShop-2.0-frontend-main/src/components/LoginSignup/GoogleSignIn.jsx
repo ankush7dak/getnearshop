@@ -40,7 +40,7 @@ const GoogleSignIn = () => {
       setError("");
 
       // STEP 1: Verify Google token and selected role
-      await axios.post(
+      const res = await axios.post(
         `${API}/auth/google/verify`,
         {
           credential: credentialResponse.credential,
@@ -178,9 +178,6 @@ const GoogleSignIn = () => {
           ))}
         </div> */}
       </div>
-
-      <h2>Or</h2>
-
       {loading && (
         <p className="google-loading">Signing in...</p>
       )}
@@ -188,6 +185,10 @@ const GoogleSignIn = () => {
       {error && (
         <p className="google-error">{error}</p>
       )}
+
+      <h2>Or</h2>
+
+      
 
     </div>
   );

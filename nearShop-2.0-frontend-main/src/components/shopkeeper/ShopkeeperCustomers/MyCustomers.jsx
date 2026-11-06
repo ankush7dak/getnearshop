@@ -200,7 +200,8 @@ export default function MyCustomers() {
 
   return (
     
-    <><ShopkeeperTopNav></ShopkeeperTopNav>
+    <>
+    <ShopkeeperTopNav></ShopkeeperTopNav>
     <div className="my-customers-page">
         
       <div className="mc-page-header">

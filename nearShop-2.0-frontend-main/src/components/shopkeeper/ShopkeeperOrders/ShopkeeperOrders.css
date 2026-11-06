@@ -746,3 +746,154 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+@media (max-width: 768px) {
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  .orders-page {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 16px 12px;
+    overflow-x: hidden;
+  }
+
+  .orders-heading,
+  .orders-toolbar,
+  .orders-summary,
+  .orders-grid,
+  .order-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .orders-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+  }
+
+  .order-card {
+    overflow: hidden;
+  }
+
+  .order-card-head {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .order-card-head > div {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .order-status {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .order-card-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+
+  .order-actions {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .order-btn {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .orders-search {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .orders-search input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .status-tabs {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .order-modal-overlay {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .order-modal {
+    width: 100%;
+    max-width: 570px;
+    min-width: 0;
+  }
+
+  .modal-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .modal-item {
+    min-width: 0;
+  }
+
+  .modal-item > div {
+    min-width: 0;
+  }
+}
+
+/* Extra small mobile devices */
+
+@media (max-width: 380px) {
+
+  .orders-page {
+    padding: 12px 9px;
+  }
+
+  .orders-heading {
+    gap: 8px;
+  }
+
+  .orders-heading h2 {
+    font-size: 18px;
+  }
+
+  .refresh-orders {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .order-card {
+    padding: 12px;
+  }
+
+  .order-card-details {
+    gap: 12px 8px;
+  }
+
+  .order-btn {
+    flex: 1 1 100%;
+  }
+
+}

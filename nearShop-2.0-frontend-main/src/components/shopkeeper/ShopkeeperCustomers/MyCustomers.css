@@ -1,7 +1,7 @@
 
 .my-customers-page {
   padding: 28px;
-  min-height: 100%;
+  min-height: 100vh;
   background: #f7faf7;
   color: #203128;
   box-sizing: border-box;

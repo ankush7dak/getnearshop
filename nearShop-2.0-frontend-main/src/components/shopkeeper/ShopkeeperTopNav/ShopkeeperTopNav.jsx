@@ -98,6 +98,7 @@ export default function ShopkeeperTopNav() {
 
   return (
     <header className="sk-topnav">
+      <HamburgerMenu />
       {/* LEFT: SHOP NAME AND STATUS */}
       <div className="sk-topnav-left">
         <FaStore className="logo-icon" />
@@ -142,7 +143,7 @@ export default function ShopkeeperTopNav() {
       </div>
 
       {/* HAMBURGER MENU */}
-      <HamburgerMenu />
+      
 
       {/* RIGHT: NOTIFICATIONS AND PROFILE */}
       <div className="sk-topnav-right">
@@ -178,19 +179,19 @@ export default function ShopkeeperTopNav() {
                 My Profile
               </Link>
 
-              <Link
+              {/* <Link
                 to="/shopkeeper/shop"
                 onClick={() => setProfileOpen(false)}
               >
                 Shop Settings
-              </Link>
+              </Link> */}
 
-              <Link
+              {/* <Link
                 to="/shopkeeper/bank"
                 onClick={() => setProfileOpen(false)}
               >
                 Bank Details
-              </Link>
+              </Link> */}
 
               <hr />
 

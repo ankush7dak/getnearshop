@@ -7,7 +7,7 @@ export default function NearShopNavBar() {
       <div className="nearshop-nav-inner">
         {/* BRAND */}
         <HamburgerMenu></HamburgerMenu>
-        <div className="nav-brand">NearShop</div>
+        <div className="nav-brand">getNearShop</div>
 
         {/* SEARCH */}
        
