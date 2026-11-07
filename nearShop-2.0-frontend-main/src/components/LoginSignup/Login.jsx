@@ -143,11 +143,11 @@ const Login = () => {
         onSubmit={handleLogin}
         className="auth-form"
       >
-        
+
 
         <h2>Login</h2>
-<GoogleSignIn></GoogleSignIn>
-<h1>  </h1>
+        <GoogleSignIn></GoogleSignIn>
+        {/* <h1>  </h1> */}
         {error && (
           <p className="error">{error}</p>
         )}

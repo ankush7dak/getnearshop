@@ -27,6 +27,7 @@ import ShopRegistration from './components/shopkeeper/ShopRegistration/ShopRegis
 import GetNewRole from './components/LoginSignup/getNewRole/GetNewRole';
 import NearShopNavBar from './components/customer/NearByShopSearchPage/NearShopNavBar/NearShopNavBar';
 import MyCustomers from './components/shopkeeper/ShopkeeperCustomers/MyCustomers';
+import DownloadApp from './components/DownloadApp/DownloadApp';
 
 
 function App() {
@@ -168,6 +169,7 @@ function App() {
 
 
       </Routes>
+      <DownloadApp></DownloadApp>
       </CustomerProvider>
     // </Router>
   );

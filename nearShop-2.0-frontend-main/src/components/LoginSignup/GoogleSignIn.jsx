@@ -461,7 +461,7 @@ const GoogleSignIn = () => {
         <p className="google-error">{error}</p>
       )}
 
-      <h2>Or</h2>
+      <p>Or</p>
 
     </div>
   );

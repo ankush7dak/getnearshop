@@ -46,7 +46,7 @@ body {
 
 .auth-form input:focus,
 .auth-form select:focus {
-  border-color: #007bff;
+  border-color: #147344;
 }
 
 .auth-form button {
@@ -61,13 +61,13 @@ body {
 }
 
 .auth-form button[type="submit"] {
-  background-color: #007bff;
-  color: #fff;
+  background-color: #107c22;
+  /* color: #fff; */
   margin-bottom: 10px;
 }
 
 .auth-form button[type="submit"]:hover {
-  background-color: #0056b3;
+  background-color: #147344;
 }
 
 .google-login-btn {
@@ -86,7 +86,7 @@ body {
 }
 
 .auth-form p span {
-  color: #007bff;
+  color: #147344;
   cursor: pointer;
 }
 
