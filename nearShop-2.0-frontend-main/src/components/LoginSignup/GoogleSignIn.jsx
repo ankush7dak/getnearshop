@@ -436,7 +436,7 @@ const GoogleSignIn = () => {
               : "Sign in with Google"}
           </button>
         ) : (
-          loginRole && (
+           (
             <GoogleLogin
               onSuccess={handleWebGoogleSuccess}
               onError={() =>
@@ -446,6 +446,7 @@ const GoogleSignIn = () => {
               shape="rectangular"
               theme="outline"
               size="large"
+              
             />
           )
         )}
