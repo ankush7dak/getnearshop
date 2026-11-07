@@ -7,5 +7,6 @@ export const LINKS = {
 
   IMAGE_CDN: "https://cdn.nearshop.com",
   SUPPORT_PAGE: "/support",
-  TERMS: "/terms"
+  TERMS: "/terms",
+  google_client_id : "143802123542-i0pts07f6rc1hp30jad2ial6f85mr4hi.apps.googleusercontent.com"
 };
