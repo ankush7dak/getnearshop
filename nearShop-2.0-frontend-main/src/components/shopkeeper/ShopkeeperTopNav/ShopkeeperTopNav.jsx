@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import {
   FaBell,
   FaUserCircle,
@@ -97,6 +97,7 @@ export default function ShopkeeperTopNav() {
   }, []);
 
   return (
+    <>
     <header className="sk-topnav">
       <HamburgerMenu />
       {/* LEFT: SHOP NAME AND STATUS */}
@@ -200,6 +201,9 @@ export default function ShopkeeperTopNav() {
           )}
         </div>
       </div>
+      
     </header>
+    <Outlet></Outlet></>
+    
   );
 }

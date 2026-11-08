@@ -1,11 +1,15 @@
 /* logout.css */
 .logout {
   background-color: #ff4d4f; /* Red button */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 5px 5px;
   font-size: 16px;
-  border-radius: 6px;
+  margin-right: 10px;
+  border-radius: 15px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.1s ease;
 }

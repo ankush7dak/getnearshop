@@ -49,6 +49,7 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
+  margin-right: 10px;
 }
 
 .shop-status-btn.open {

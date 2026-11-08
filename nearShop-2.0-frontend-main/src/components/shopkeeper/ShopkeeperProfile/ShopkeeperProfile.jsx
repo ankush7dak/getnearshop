@@ -139,7 +139,7 @@ export default function ShopkeeperProfile() {
 
   return (
     <>
-      <ShopkeeperTopNav />
+      {/* <ShopkeeperTopNav /> */}
       <div className="shop-profile-page">
         
         <h2>🏪 Shopkeeper Profile & Store Settings</h2>

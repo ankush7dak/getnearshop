@@ -811,7 +811,7 @@ export default function ShopkeeperInventoryPro() {
 
   return (
     <>
-      <ShopkeeperTopNav />
+      {/* <ShopkeeperTopNav /> */}
 
       <main className="inventory-pro">
         {loading && <Loading />}
