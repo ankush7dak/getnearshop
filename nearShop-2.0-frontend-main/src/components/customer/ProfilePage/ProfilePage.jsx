@@ -1,9 +1,8 @@
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./ProfilePage.css";
 import { LINKS } from "../../../constants/LinksUtility";
-import { Links } from "react-router-dom";
 
 const EMPTY_PROFILE = {
   customerId: "",
@@ -15,7 +14,8 @@ const EMPTY_PROFILE = {
   address: "",
   city: "",
   state: "",
-  pincode: ""
+  pincode: "",
+  profileImageUrl: ""
 };
 
 const EMPTY_PASSWORD = {
@@ -34,7 +34,6 @@ const getErrorMessage = (err, fallback) => {
   return data?.message || data?.error || err.message || fallback;
 };
 
-// HTML date inputs require YYYY-MM-DD.
 const normalizeDate = (value) => {
   if (!value) return "";
 
@@ -64,7 +63,8 @@ const normalizeProfile = (data = {}) => ({
   address: data.address ?? "",
   city: data.city ?? "",
   state: data.state ?? "",
-  pincode: data.pincode ?? ""
+  pincode: data.pincode ?? "",
+  profileImageUrl: data.profileImageUrl ?? ""
 });
 
 export default function ProfilePage() {
@@ -82,6 +82,12 @@ export default function ProfilePage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState(EMPTY_PASSWORD);
 
+  // Profile image states
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const fileInputRef = useRef(null);
+
+  // Fetch profile
   const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
@@ -109,6 +115,16 @@ export default function ProfilePage() {
     fetchProfile();
   }, [fetchProfile]);
 
+  // Clean up temporary preview URL
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  // Handle profile field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -118,6 +134,32 @@ export default function ProfilePage() {
     }));
   };
 
+  // Select profile image
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setError("");
+    setMessage("");
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image.");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Profile image must be smaller than 5 MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedImage(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  // Save profile and image together
   const handleSave = async (e) => {
     e?.preventDefault();
 
@@ -131,36 +173,50 @@ export default function ProfilePage() {
       setError("");
       setMessage("");
 
-      const payload = {
-        name: profile.name.trim(),
-        gender: profile.gender || null,
-        dob: profile.dob || null,
-        address: profile.address.trim(),
-        city: profile.city.trim(),
-        state: profile.state.trim(),
-        pincode: profile.pincode.trim()
-      };
+      const formData = new FormData();
+
+      formData.append("name", profile.name.trim());
+      formData.append("gender", profile.gender || "");
+      formData.append("dob", profile.dob || "");
+      formData.append("address", profile.address.trim());
+      formData.append("city", profile.city.trim());
+      formData.append("state", profile.state.trim());
+      formData.append("pincode", profile.pincode.trim());
+
+      // Add image only when a new image is selected
+      if (selectedImage) {
+        formData.append("profileImage", selectedImage);
+      }
 
       const response = await axios.put(
         `${LINKS.API_BASE_URL}/api/customer/profile`,
-        payload,
-        { withCredentials: true }
+        formData,
+        {
+          withCredentials: true
+        }
       );
 
-      // Use the server response when available, otherwise retain
-      // the values that were submitted.
       const updated = normalizeProfile({
         ...profile,
-        ...payload,
-        ...(response.data && typeof response.data === "object"
-          ? response.data
-          : {})
+        ...response.data,
+        // Retain existing image if backend does not return a new URL
+        profileImageUrl:
+          response.data?.profileImageUrl ?? profile.profileImageUrl
       });
 
       setProfile(updated);
       setOriginalProfile(updated);
+
+      setSelectedImage(null);
+      setPreviewUrl("");
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
       setIsEditing(false);
       setMessage("Profile updated successfully.");
+
     } catch (err) {
       setError(getErrorMessage(err, "Unable to save profile changes."));
     } finally {
@@ -168,13 +224,21 @@ export default function ProfilePage() {
     }
   };
 
+  // Cancel editing
   const handleCancel = () => {
     setProfile(originalProfile);
+    setSelectedImage(null);
+    setPreviewUrl("");
     setIsEditing(false);
     setError("");
     setMessage("");
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
+  // Password handling
   const handlePasswordInput = (e) => {
     const { name, value } = e.target;
 
@@ -226,6 +290,7 @@ export default function ProfilePage() {
       setShowPasswordModal(false);
       setPasswordData({ ...EMPTY_PASSWORD });
       setMessage("Password updated successfully.");
+
     } catch (err) {
       setError(getErrorMessage(err, "Unable to change password."));
     } finally {
@@ -249,20 +314,71 @@ export default function ProfilePage() {
     );
   }
 
+  const displayedImage =
+    previewUrl ||
+    profile.profileImageUrl ||
+    "https://i.pravatar.cc/150";
+
   return (
     <div className="profile-container-1">
       <h2 className="page-title">My Profile</h2>
 
-      {error && <div className="profile-error" role="alert">{error}</div>}
-      {message && <div className="profile-success" role="status">{message}</div>}
+      {error && (
+        <div className="profile-error" role="alert">
+          {error}
+        </div>
+      )}
+
+      {message && (
+        <div className="profile-success" role="status">
+          {message}
+        </div>
+      )}
 
       <div className="nearshop-profile-page">
         <div className="profile-card">
+
+          {/* Profile Image */}
           <div className="avatar-section">
-            <img
-              src="https://i.pravatar.cc/150"
-              alt="Profile"
-            />
+
+            <div className="profile-image-wrapper">
+              <img
+                src={displayedImage}
+                alt="Profile"
+                className="profile-avatar"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "https://i.pravatar.cc/150";
+                }}
+              />
+
+              {isEditing && (
+                <>
+                  <button
+                    type="button"
+                    className="change-photo-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={saving}
+                  >
+                    Change Photo
+                  </button>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleImageChange}
+                  />
+                </>
+              )}
+            </div>
+
+            {selectedImage && (
+              <small className="selected-image-name">
+                {selectedImage.name}
+              </small>
+            )}
 
             <button
               type="button"
@@ -279,6 +395,7 @@ export default function ProfilePage() {
           </div>
 
           <form className="profile-form" onSubmit={handleSave}>
+
             <div className="form-group">
               <label htmlFor="customerId">Customer ID</label>
               <input
@@ -389,10 +506,12 @@ export default function ProfilePage() {
                 </button>
               </>
             )}
+
           </form>
         </div>
       </div>
 
+      {/* Change Password Modal */}
       {showPasswordModal && (
         <div className="password-modal-overlay">
           <div
@@ -451,7 +570,9 @@ export default function ProfilePage() {
                   className="save-btn"
                   disabled={changingPassword}
                 >
-                  {changingPassword ? "Updating..." : "Update Password"}
+                  {changingPassword
+                    ? "Updating..."
+                    : "Update Password"}
                 </button>
               </div>
             </form>

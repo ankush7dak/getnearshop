@@ -267,6 +267,58 @@
   white-space: nowrap;
 }
 
+/* Shop profile section */
+.order-shop-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.order-shop-image {
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+}
+
+.order-shop-details {
+  min-width: 0;
+}
+
+.order-shop-details h4 {
+  margin: 0 0 5px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.order-shop-details p {
+  margin: 3px 0;
+  font-size: 12px;
+  color: #777;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .order-shop-image {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+  }
+
+  .order-shop-info {
+    gap: 9px;
+  }
+
+  .order-shop-details h4 {
+    font-size: 14px;
+  }
+}
+
 .status-badge.active {
   color: #946000;
   background: #fff7df;

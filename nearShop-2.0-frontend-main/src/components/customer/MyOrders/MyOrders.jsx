@@ -272,18 +272,36 @@ export default function MyOrders() {
             {filteredOrders.map((order) => (
               <div className="order-card" key={order.orderId}>
                 {/* ORDER HEADER */}
+                {/* ORDER HEADER */}
                 <div className="order-top">
-                  <div>
-                    <h4>
-                      {order.shopName || `Shop #${order.shopId}`}
-                    </h4>
 
-                    <p>Shop ID: {order.shopId}</p>
-                    <p>Order ID: {order.orderId}</p>
+                  <div className="order-shop-info">
 
-                    <p className="order-date">
-                      {formatDate(order.orderDate)}
-                    </p>
+                    <img
+                      src={
+                        order.shopProfileImage
+                      }
+                      alt={order.shopName || "Shop"}
+                      className="order-shop-image"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "";
+                      }}
+                    />
+
+                    <div className="order-shop-details">
+                      <h4>
+                        {order.shopName || `Shop #${order.shopId}`}
+                      </h4>
+
+                      <p>Shop ID: {order.shopId}</p>
+                      <p>Order ID: {order.orderId}</p>
+
+                      <p className="order-date">
+                        {formatDate(order.orderDate)}
+                      </p>
+                    </div>
+
                   </div>
 
                   <span
@@ -293,6 +311,7 @@ export default function MyOrders() {
                   >
                     {getStatusText(order.orderStatus)}
                   </span>
+
                 </div>
 
                 {/* ORDER ITEMS */}
@@ -320,8 +339,8 @@ export default function MyOrders() {
                       <div>
                         {formatPrice(
                           item.itemTotal ??
-                            Number(item.price ?? 0) *
-                              Number(item.quantity ?? 0)
+                          Number(item.price ?? 0) *
+                          Number(item.quantity ?? 0)
                         )}
                       </div>
                     </div>

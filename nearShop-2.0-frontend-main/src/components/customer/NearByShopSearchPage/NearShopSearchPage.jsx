@@ -570,6 +570,7 @@ useEffect(() => {
 
                   <div className="shop-main">
                     <h3>{shop.shopName}</h3>
+                    {/* <img src={`${shop.logoUrl}`} alt="" /> */}
                     <p className="category">{shop.categoryName}</p>
 
                     <div className="shop-meta">
