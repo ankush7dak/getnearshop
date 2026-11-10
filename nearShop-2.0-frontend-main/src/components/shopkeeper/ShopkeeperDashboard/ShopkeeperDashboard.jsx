@@ -20,6 +20,8 @@ import axios from "axios";
 
 export default function ShopkeeperDashboard() {
   const [productCount, setProductCount] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [newOrders, setNewOrders] = useState(0);
 
   const fetchDashboardData = async () => {
     try {
@@ -33,6 +35,8 @@ export default function ShopkeeperDashboard() {
       console.log("Dashboard data:", response.data);
 
       setProductCount(response.data.productCount || 0);
+      setTotalRevenue(response.data.totalRevenue || 0);
+      setNewOrders(response.data.newOrders || 0);
     } catch (error) {
       console.error("Dashboard fetch error:", error);
     }
@@ -87,7 +91,7 @@ export default function ShopkeeperDashboard() {
             <StatCard
               icon={<FaClipboardList />}
               title="New Orders"
-              value="12"
+              value={newOrders}
               link="/shopkeeper/orders"
               variant="green"
               description="Orders awaiting attention"
@@ -115,7 +119,7 @@ export default function ShopkeeperDashboard() {
             <StatCard
               icon={<FaRupeeSign />}
               title="Today's Revenue"
-              value="₹4,520"
+              value={totalRevenue}
               variant="green"
               description="Revenue generated today"
             />

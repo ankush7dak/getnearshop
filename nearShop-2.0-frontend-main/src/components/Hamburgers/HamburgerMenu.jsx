@@ -74,12 +74,18 @@ const HamburgerMenu = () => {
     <nav className="responsive-navbar">
       {/* Desktop and tablet navbar */}
       <div className="desktop-nav">
-        <ul>
-          {items.map((item) => (
-            <li key={item.name}>{renderMenuItem(item)}</li>
-          ))}
-        </ul>
-      </div>
+  <img
+    src="/getNearShopLogo.png"
+    alt="GetNearShop Logo"
+    className="navbar-logo"
+  />
+
+  <ul>
+    {items.map((item) => (
+      <li key={item.name}>{renderMenuItem(item)}</li>
+    ))}
+  </ul>
+</div>
 
       {/* Mobile hamburger button */}
       <button
@@ -110,6 +116,11 @@ const HamburgerMenu = () => {
         className={`menu-overlay ${open ? "open" : ""}`}
         aria-hidden={!open}
       >
+            <img
+        src="/getNearShopLogo.png"
+        alt="GetNearShop Logo"
+        className="mobnavbar-logo"
+      />
         <ul>
           {items.map((item) => (
             <li key={item.name} onClick={closeMenu}>

@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 
 import "./ShopkeeperOrders.css";
-import ShopkeeperTopNav from "../ShopkeeperTopNav/ShopkeeperTopNav";
 import { LINKS } from "../../../constants/LinksUtility";
 
 const API = `${LINKS.API_BASE_URL}/api/shop/orders`;
@@ -54,6 +53,51 @@ const formatDate = (date) => {
   });
 };
 
+// Generate customer initials when profile image is unavailable
+const getInitials = (name, userId) => {
+  if (!name || !name.trim()) {
+    return String(userId || "C").slice(0, 2).toUpperCase();
+  }
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase();
+};
+
+// Reusable customer avatar
+function CustomerAvatar({
+  imageUrl,
+  name,
+  userId,
+  className = "",
+}) {
+  const [imageError, setImageError] = useState(false);
+
+  const showImage =
+    typeof imageUrl === "string" &&
+    imageUrl.trim().length > 0 &&
+    !imageError;
+
+  return (
+    <div className={`customer-avatar ${className}`}>
+      {showImage ? (
+        <img
+          src={imageUrl}
+          alt={name || "Customer"}
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <span>{getInitials(name, userId)}</span>
+      )}
+    </div>
+  );
+}
+
 export default function ShopkeeperOrders() {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("ALL");
@@ -66,98 +110,116 @@ export default function ShopkeeperOrders() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  //pagination states
-const [page, setPage] = useState(0);
-const [hasMore, setHasMore] = useState(true);
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-const [loadingMore, setLoadingMore] = useState(false);
+  const observerRef = useRef(null);
+  const loadingMoreRef = useRef(false);
 
-const observerRef = useRef(null);
-const loadingMoreRef = useRef(false);
- const fetchOrders = useCallback(async (pageNumber = 0, reset = false) => {
-    if (pageNumber === 0) {
-        reset ? setRefreshing(true) : setLoading(true);
-    } else {
+  // Fetch orders
+  const fetchOrders = useCallback(
+    async (pageNumber = 0, reset = false) => {
+      if (pageNumber === 0) {
+        if (reset) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+      } else {
         if (loadingMoreRef.current || !hasMore) return;
 
         loadingMoreRef.current = true;
         setLoadingMore(true);
-    }
+      }
 
-    setError("");
+      setError("");
 
-    try {
+      try {
         const response = await axios.get(API, {
-            withCredentials: true,
-            params: {
-                page: pageNumber,
-                size: 8
-            }
+          withCredentials: true,
+          params: {
+            page: pageNumber,
+            size: 8,
+          },
         });
 
         const data = response.data;
-        const newOrders = data || [];
 
-        setOrders(prev =>
-            reset || pageNumber === 0
-                ? newOrders
-                : [...prev, ...newOrders]
+        // Supports Spring Page response and plain array
+        const newOrders = Array.isArray(data)
+          ? data
+          : data?.content || [];
+
+        setOrders((prev) =>
+          reset || pageNumber === 0
+            ? newOrders
+            : [...prev, ...newOrders]
         );
 
         setPage(pageNumber);
-        setHasMore(!data.last);
 
-    } catch (err) {
+        setHasMore(
+          Array.isArray(data)
+            ? newOrders.length === 8
+            : data?.last === false
+        );
+      } catch (err) {
         setError(
-            err.response?.data?.message ||
+          err.response?.data?.message ||
             "Unable to load orders. Please check your login and backend."
         );
-    } finally {
+      } finally {
         setLoading(false);
         setRefreshing(false);
         setLoadingMore(false);
         loadingMoreRef.current = false;
-    }
-}, [hasMore]);
+      }
+    },
+    [hasMore]
+  );
 
-useEffect(() => {
+  useEffect(() => {
     fetchOrders(0, true);
-}, []);
+  }, [fetchOrders]);
 
-const lastOrderRef = useCallback((node) => {
-    if (loading) return;
+  // Infinite scrolling
+  const lastOrderRef = useCallback(
+    (node) => {
+      if (loading) return;
 
-    if (observerRef.current) {
-        observerRef.current.disconnect();
-    }
+      observerRef.current?.disconnect();
 
-    observerRef.current = new IntersectionObserver(
+      if (!node) return;
+
+      observerRef.current = new IntersectionObserver(
         (entries) => {
-            if (
-                entries[0].isIntersecting &&
-                hasMore &&
-                !loadingMoreRef.current
-            ) {
-                fetchOrders(page + 1);
-            }
+          if (
+            entries[0].isIntersecting &&
+            hasMore &&
+            !loadingMoreRef.current
+          ) {
+            fetchOrders(page + 1);
+          }
         },
         {
-            threshold: 0.1
+          threshold: 0.1,
         }
-    );
+      );
 
-    if (node) {
-        observerRef.current.observe(node);
-    }
-}, [loading, hasMore, page, fetchOrders]);
+      observerRef.current.observe(node);
+    },
+    [loading, hasMore, page, fetchOrders]
+  );
 
-useEffect(() => {
+  useEffect(() => {
     return () => {
-        observerRef.current?.disconnect();
+      observerRef.current?.disconnect();
     };
-}, []);
+  }, []);
 
-
+  // Accept / Reject / Update order status
   const performAction = async (order, action, status = null) => {
     const orderId = order.orderId;
 
@@ -181,30 +243,40 @@ useEffect(() => {
       } else if (action === "status") {
         await axios.post(
           `${LINKS.API_BASE_URL}/api/shop/${orderId}/status`,
-          { },
-          { withCredentials: true,
-            params :{status : status }
+          {},
+          {
+            withCredentials: true,
+            params: { status },
           }
         );
       }
 
-      setSuccess(
-        `Order #${orderId} updated successfully.`
+      setSuccess(`Order #${orderId} updated successfully.`);
+
+      const updatedStatus =
+        action === "accept"
+          ? "CONFIRMED"
+          : action === "reject"
+            ? "CANCELLED"
+            : status;
+
+      setOrders((prev) =>
+        prev.map((item) =>
+          item.orderId === orderId
+            ? { ...item, orderStatus: updatedStatus }
+            : item
+        )
       );
 
       if (selectedOrder?.orderId === orderId) {
         setSelectedOrder((prev) => ({
           ...prev,
-          orderStatus:
-            action === "accept"
-              ? "CONFIRMED"
-              : action === "reject"
-                ? "CANCELLED"
-                : status,
+          orderStatus: updatedStatus,
         }));
       }
 
-      await fetchOrders(false);
+      // Refresh first page after action
+      await fetchOrders(0, true);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -215,13 +287,17 @@ useEffect(() => {
     }
   };
 
+  // Search and filter
   const filteredOrders = orders.filter((order) => {
     const status = order.orderStatus || "";
 
     const matchesStatus =
       activeTab === "ALL" || status === activeTab;
 
-    const customer = String(order.customerName ?? order.userId ?? "");
+    const customer = String(
+      order.customerName ?? order.userId ?? ""
+    );
+
     const orderId = String(order.orderId ?? "");
 
     const matchesSearch =
@@ -231,6 +307,7 @@ useEffect(() => {
     return matchesStatus && matchesSearch;
   });
 
+  // Action buttons
   const renderActions = (order) => {
     const status = order.orderStatus;
     const busy = actionLoading?.startsWith(`${order.orderId}-`);
@@ -324,9 +401,8 @@ useEffect(() => {
 
   return (
     <>
-      {/* <ShopkeeperTopNav /> */}
-
       <main className="orders-page">
+        {/* Page heading */}
         <div className="orders-heading">
           <div>
             <h2>Orders Management</h2>
@@ -335,7 +411,7 @@ useEffect(() => {
 
           <button
             className="refresh-orders"
-            onClick={() => fetchOrders(false)}
+            onClick={() => fetchOrders(0, true)}
             disabled={refreshing}
           >
             <FaSyncAlt className={refreshing ? "spin" : ""} />
@@ -343,15 +419,20 @@ useEffect(() => {
           </button>
         </div>
 
+        {/* Error message */}
         {error && (
           <div className="orders-alert error-alert">
             <span>{error}</span>
-            <button onClick={() => setError("")} aria-label="Dismiss error">
+            <button
+              onClick={() => setError("")}
+              aria-label="Dismiss error"
+            >
               <FaTimes />
             </button>
           </div>
         )}
 
+        {/* Success message */}
         {success && (
           <div className="orders-alert success-alert">
             <span>{success}</span>
@@ -364,6 +445,7 @@ useEffect(() => {
           </div>
         )}
 
+        {/* Search and filters */}
         <section className="orders-toolbar">
           <div className="orders-search">
             <FaSearch />
@@ -390,6 +472,7 @@ useEffect(() => {
           </div>
         </section>
 
+        {/* Orders count */}
         {!loading && (
           <div className="orders-summary">
             <span>
@@ -399,6 +482,7 @@ useEffect(() => {
           </div>
         )}
 
+        {/* Loading */}
         {loading ? (
           <div className="orders-state">
             <div className="orders-spinner" />
@@ -415,42 +499,100 @@ useEffect(() => {
             </p>
           </div>
         ) : (
+          /* Order cards */
           <section className="orders-grid">
-            {filteredOrders.map((order,index) => {
+            {filteredOrders.map((order, index) => {
               const status = order.orderStatus || "PLACED";
-              const items = Array.isArray(order.items) ? order.items : [];
+              const items = Array.isArray(order.items)
+                ? order.items
+                : [];
 
               return (
-                <article className="order-card" key={order.orderId} ref={index === filteredOrders.length - 6 ? lastOrderRef : null}>
-                  
-                  <div className="order-card-head" >
+                <article
+                  className="order-card"
+                  key={order.orderId}
+                  ref={
+                    index === filteredOrders.length - 6
+                      ? lastOrderRef
+                      : null
+                  }
+                >
+                  {/* Card header */}
+                  <div className="order-card-head">
                     <div>
-                      <span className="order-id-label">Order ID</span>
+                      <span className="order-id-label">
+                        Order ID
+                      </span>
                       <h3>#{order.orderId}</h3>
                     </div>
 
-                    <span className={`order-status status-${status.toLowerCase()}`}>
-                      {STATUS_LABELS[status] || status.replaceAll("_", " ")}
+                    <span
+                      className={`order-status status-${status.toLowerCase()}`}
+                    >
+                      {STATUS_LABELS[status] ||
+                        status.replaceAll("_", " ")}
                     </span>
                   </div>
 
+                  {/* Customer and order details */}
                   <div className="order-card-details">
-                    <p>
-                      <span>Customer</span>
-                      <strong>
-                        {order.customerName || `Customer #${order.userId ?? "—"}`}
-                      </strong>
-                    </p>
+
+                    {/* Customer with profile image */}
+                    <div className="order-customer-info">
+                      <CustomerAvatar
+                        imageUrl={order.profileImageUrl}
+                        name={order.customerName}
+                        userId={order.userId}
+                      />
+
+                      <div className="order-customer-text">
+                        <span>Customer Name</span>
+                        <strong>
+                          {order.customerName ||
+                            `Name not found`}
+                        </strong>
+                        <span>Mobile</span>
+                        <strong>
+                          {order.mobileNo ||
+                            `Mobile not available`}
+                        </strong>
+                        <span>Customer Id</span>
+                        <strong>
+                          {
+                            `#${order.userId ?? "—"}`}
+                         </strong>
+                        {/*<strong>Customer Name</strong>
+                        <span>
+                          {order.customerName ||
+                            `Name not Provided`}
+                        </span>
+                        <strong>Mobile</strong>
+                        <span>
+                          {order.mobileNo ||
+                            `Mobile not available`}
+                        </span>
+                        <strong>Customer Id</strong>
+                        <span>
+                          {
+                            `#${order.userId ?? "—"}`}
+                        </span> */}
+                      </div>
+                    </div>
 
                     <p>
                       <span>Items</span>
-                      <strong>{order.totalItems ?? items.length}</strong>
+                      <strong>
+                        {order.totalItems ?? items.length}
+                      </strong>
                     </p>
 
                     <p>
                       <span>Total amount</span>
                       <strong className="order-amount">
-                        ₹{Number(order.totalAmount ?? 0).toLocaleString("en-IN")}
+                        ₹
+                        {Number(
+                          order.totalAmount ?? 0
+                        ).toLocaleString("en-IN")}
                       </strong>
                     </p>
 
@@ -460,6 +602,7 @@ useEffect(() => {
                     </p>
                   </div>
 
+                  {/* Products preview */}
                   <div className="order-item-preview">
                     <span>Products</span>
                     <p>
@@ -467,7 +610,9 @@ useEffect(() => {
                         ? items
                             .map(
                               (item) =>
-                                `${item.productName || "Product"} × ${item.quantity ?? 1}`
+                                `${item.productName || "Product"} × ${
+                                  item.quantity ?? 1
+                                }`
                             )
                             .join(", ")
                         : "No item details available"}
@@ -481,6 +626,15 @@ useEffect(() => {
           </section>
         )}
 
+        {/* Pagination loader */}
+        {loadingMore && (
+          <div className="orders-state">
+            <div className="orders-spinner" />
+            <p>Loading more orders...</p>
+          </div>
+        )}
+
+        {/* Order details modal */}
         {selectedOrder && (
           <div
             className="order-modal-overlay"
@@ -493,6 +647,7 @@ useEffect(() => {
               aria-labelledby="order-modal-title"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Modal header */}
               <div className="order-modal-header">
                 <div>
                   <span>Order details</span>
@@ -510,8 +665,10 @@ useEffect(() => {
                 </button>
               </div>
 
+              {/* Status */}
               <div className="modal-status-row">
                 <span>Status</span>
+
                 <span
                   className={`order-status status-${(
                     selectedOrder.orderStatus || "PLACED"
@@ -522,13 +679,25 @@ useEffect(() => {
                 </span>
               </div>
 
+              {/* Customer and order information */}
               <div className="modal-info-grid">
-                <div>
-                  <span>Customer</span>
-                  <strong>
-                    {selectedOrder.customerName ||
-                      `Customer #${selectedOrder.userId ?? "—"}`}
-                  </strong>
+
+                {/* Customer with profile image */}
+                <div className="modal-customer-info">
+                  <CustomerAvatar
+                    imageUrl={selectedOrder.profileImageUrl}
+                    name={selectedOrder.customerName}
+                    userId={selectedOrder.userId}
+                    className="modal-customer-avatar"
+                  />
+
+                  <div>
+                    <span>Customer</span>
+                    <strong>
+                      {selectedOrder.customerName ||
+                        `Customer #${selectedOrder.userId ?? "—"}`}
+                    </strong>
+                  </div>
                 </div>
 
                 <div>
@@ -538,69 +707,94 @@ useEffect(() => {
 
                 <div>
                   <span>Order date</span>
-                  <strong>{formatDate(selectedOrder.orderDate)}</strong>
+                  <strong>
+                    {formatDate(selectedOrder.orderDate)}
+                  </strong>
                 </div>
 
                 <div>
                   <span>Total items</span>
-                  <strong>{selectedOrder.totalItems ?? 0}</strong>
+                  <strong>
+                    {selectedOrder.totalItems ?? 0}
+                  </strong>
                 </div>
               </div>
 
-              <h4 className="modal-section-title">Ordered products</h4>
+              {/* Products */}
+              <h4 className="modal-section-title">
+                Ordered products
+              </h4>
 
               <div className="modal-items">
                 {(selectedOrder.items || []).map((item) => (
-                  <div className="modal-item" key={item.orderItemId ?? item.productId}>
+                  <div
+                    className="modal-item"
+                    key={item.orderItemId ?? item.productId}
+                  >
                     <div>
-                      <strong>{item.productName || "Product"}</strong>
+                      <strong>
+                        {item.productName || "Product"}
+                      </strong>
+
                       <span>
-                        ₹{Number(item.price ?? 0).toLocaleString("en-IN")} ×{" "}
+                        ₹
+                        {Number(item.price ?? 0).toLocaleString("en-IN")}
+                        {" "}×{" "}
                         {item.quantity ?? 0}
                       </span>
                     </div>
 
                     <strong>
-                      ₹{Number(item.itemTotal ?? 0).toLocaleString("en-IN")}
+                      ₹
+                      {Number(item.itemTotal ?? 0).toLocaleString("en-IN")}
                     </strong>
                   </div>
                 ))}
 
                 {!(selectedOrder.items || []).length && (
-                  <p className="modal-empty">No product details available.</p>
+                  <p className="modal-empty">
+                    No product details available.
+                  </p>
                 )}
               </div>
 
+              {/* Bill details */}
               <div className="modal-bill">
                 <p>
                   <span>Subtotal</span>
                   <strong>₹{selectedOrder.subtotal ?? 0}</strong>
                 </p>
+
                 <p>
                   <span>Discount</span>
                   <strong>
                     -₹{selectedOrder.discountAmount ?? 0}
                   </strong>
                 </p>
+
                 <p>
                   <span>Delivery fee</span>
-                  <strong>₹{selectedOrder.deliveryFee ?? 0}</strong>
+                  <strong>
+                    ₹{selectedOrder.deliveryFee ?? 0}
+                  </strong>
                 </p>
+
                 <p className="modal-total">
                   <span>Total amount</span>
                   <strong>
-                    ₹{Number(selectedOrder.totalAmount ?? 0).toLocaleString("en-IN")}
+                    ₹
+                    {Number(
+                      selectedOrder.totalAmount ?? 0
+                    ).toLocaleString("en-IN")}
                   </strong>
                 </p>
               </div>
 
               {renderActions(selectedOrder)}
-              
             </section>
           </div>
         )}
       </main>
-      
     </>
   );
 }

@@ -237,3 +237,29 @@
     font-size: 13px;
   }
 }
+
+
+
+
+.navbar-logo {
+  width: clamp(110px, 15vw, 190px);
+  height: clamp(40px, 6vw, 65px);
+  object-fit: contain;
+  object-position: left center;
+  display: block;
+  flex-shrink: 1;
+  max-width: 100%;
+}
+
+.mobnavbar-logo {
+  width: clamp(110px, 15vw, 190px);
+  height: clamp(40px, 6vw, 65px);
+  object-fit: contain;
+  object-position: left center;
+  display: block;
+  flex-shrink: 1;
+  max-width: 50%;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}

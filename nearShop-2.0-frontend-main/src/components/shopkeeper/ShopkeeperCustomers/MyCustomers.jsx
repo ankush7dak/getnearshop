@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import {
   FaUsers,
@@ -15,9 +15,55 @@ import {
 
 import { LINKS } from "../../../constants/LinksUtility";
 import "./MyCustomers.css";
-import ShopkeeperTopNav from "../ShopkeeperTopNav/ShopkeeperTopNav";
 
-const API = `${LINKS.API_BASE_URL}`;
+const API = LINKS.API_BASE_URL;
+
+// ========================================
+// CUSTOMER AVATAR
+// Shows image when available, otherwise initials
+// ========================================
+
+function CustomerAvatar({ customer }) {
+  const [imageError, setImageError] = useState(false);
+
+  const imageUrl =
+    typeof customer?.profileImageUrl === "string"
+      ? customer.profileImageUrl.trim()
+      : "";
+
+  const name =
+    customer?.name ||
+    customer?.customerName ||
+    "Customer";
+
+  const initials = String(name)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="mc-avatar">
+      {imageUrl && !imageError ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <span>{initials || "C"}</span>
+      )}
+    </div>
+  );
+}
+
+// ========================================
+// MAIN COMPONENT
+// ========================================
 
 export default function MyCustomers() {
   const [customers, setCustomers] = useState([]);
@@ -30,25 +76,43 @@ export default function MyCustomers() {
   const [adding, setAdding] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const [error, setError] = useState("");
+  const [pageError, setPageError] = useState("");
+  const [modalError, setModalError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const closeTimer = useRef(null);
+
+  // ========================================
+  // FETCH CUSTOMERS
+  // ========================================
 
   const fetchCustomers = useCallback(async () => {
     try {
       setLoading(true);
-      setError("");
+      setPageError("");
 
-      const response = await axios.get(`${API}/api/shop/customers`, {
-        withCredentials: true,
-      });
-
-      setCustomers(
-        Array.isArray(response.data) ? response.data : []
+      const response = await axios.get(
+        `${API}/api/shop/customers`,
+        {
+          withCredentials: true,
+        }
       );
+
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        setCustomers(data);
+      } else if (Array.isArray(data?.content)) {
+        setCustomers(data.content);
+      } else if (Array.isArray(data?.customers)) {
+        setCustomers(data.customers);
+      } else {
+        setCustomers([]);
+      }
     } catch (err) {
       console.error("Failed to fetch customers:", err);
 
-      setError(
+      setPageError(
         err.response?.data?.message ||
           "Could not load customers. Please try again."
       );
@@ -59,42 +123,97 @@ export default function MyCustomers() {
 
   useEffect(() => {
     fetchCustomers();
+
+    return () => {
+      if (closeTimer.current) {
+        clearTimeout(closeTimer.current);
+      }
+    };
   }, [fetchCustomers]);
+
+  // ========================================
+  // SEARCH / FILTER CUSTOMERS
+  // ========================================
 
   const filteredCustomers = useMemo(() => {
     const query = searchText.trim().toLowerCase();
 
     if (!query) return customers;
 
-    return customers.filter((customer) =>
-      [
+    return customers.filter((customer) => {
+      const fields = [
         customer.name,
         customer.customerName,
         customer.customerId,
         customer.mobile,
         customer.phone,
         customer.email,
-      ].some((value) =>
+      ];
+
+      return fields.some((value) =>
         String(value ?? "").toLowerCase().includes(query)
-      )
-    );
+      );
+    });
   }, [customers, searchText]);
 
+  // ========================================
+  // DATE FORMATTER
+  // ========================================
+
+  const formatLinkedDate = (customer) => {
+    const dateValue =
+      customer?.linkedAt || customer?.createdAt;
+
+    if (!dateValue) return "Customer linked";
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Customer linked";
+    }
+
+    return `Linked ${date.toLocaleDateString()}`;
+  };
+
+  // ========================================
+  // OPEN ADD CUSTOMER MODAL
+  // ========================================
+
   const openAddModal = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+
     setCustomerId("");
     setFoundCustomer(null);
-    setError("");
+    setModalError("");
     setSuccess("");
     setShowAddModal(true);
   };
 
+  // ========================================
+  // CLOSE MODAL
+  // ========================================
+
   const closeAddModal = () => {
     if (adding || searching) return;
+
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
 
     setShowAddModal(false);
     setFoundCustomer(null);
     setCustomerId("");
+    setModalError("");
+    setSuccess("");
   };
+
+  // ========================================
+  // SEARCH CUSTOMER BY ID
+  // ========================================
 
   const searchCustomer = async (event) => {
     event.preventDefault();
@@ -102,12 +221,12 @@ export default function MyCustomers() {
     const id = customerId.trim();
 
     if (!id) {
-      setError("Please enter a customer ID.");
+      setModalError("Please enter a customer ID.");
       return;
     }
 
     setSearching(true);
-    setError("");
+    setModalError("");
     setSuccess("");
     setFoundCustomer(null);
 
@@ -115,16 +234,25 @@ export default function MyCustomers() {
       const response = await axios.get(
         `${API}/api/shop/searchCustomer`,
         {
-          params: { customerId: id },
+          params: {
+            customerId: id,
+          },
           withCredentials: true,
         }
       );
+
+      if (!response.data?.customerId) {
+        setModalError(
+          "Invalid customer information received."
+        );
+        return;
+      }
 
       setFoundCustomer(response.data);
     } catch (err) {
       console.error("Customer search failed:", err);
 
-      setError(
+      setModalError(
         err.response?.status === 404
           ? "No customer found with this ID."
           : err.response?.data?.message ||
@@ -135,38 +263,70 @@ export default function MyCustomers() {
     }
   };
 
+  // ========================================
+  // CHECK DUPLICATE CUSTOMER
+  // ========================================
+
+  const isAlreadyAdded = foundCustomer
+    ? customers.some(
+        (customer) =>
+          String(customer.customerId) ===
+          String(foundCustomer.customerId)
+      )
+    : false;
+
+  // ========================================
+  // ADD CUSTOMER TO SHOP
+  // ========================================
+
   const addCustomer = async () => {
     if (!foundCustomer?.customerId) {
-      setError("Search for a valid customer first.");
+      setModalError("Search for a valid customer first.");
+      return;
+    }
+
+    if (isAlreadyAdded) {
+      setModalError(
+        "This customer is already linked to your shop."
+      );
       return;
     }
 
     setAdding(true);
-    setError("");
+    setModalError("");
     setSuccess("");
 
     try {
-      const res = await axios.post(
-        `${API}/api/shop/addNewCustomer`,null,
-        
-        { params : { customerId: foundCustomer.customerId },
-        withCredentials: true }
+      await axios.post(
+        `${API}/api/shop/addNewCustomer`,
+        null,
+        {
+          params: {
+            customerId: foundCustomer.customerId,
+          },
+          withCredentials: true,
+        }
       );
 
-      setSuccess("Customer added to your shop successfully.");
+      setSuccess(
+        "Customer added to your shop successfully."
+      );
 
+      // Update customer directory
       await fetchCustomers();
 
-      setTimeout(() => {
+      // Close modal after successful addition
+      closeTimer.current = setTimeout(() => {
         setShowAddModal(false);
         setFoundCustomer(null);
         setCustomerId("");
         setSuccess("");
-      }, 900);
+        closeTimer.current = null;
+      }, 1000);
     } catch (err) {
       console.error("Failed to add customer:", err);
 
-      setError(
+      setModalError(
         err.response?.status === 409
           ? "This customer is already linked to your shop."
           : err.response?.data?.message ||
@@ -177,38 +337,26 @@ export default function MyCustomers() {
     }
   };
 
-  const isAlreadyAdded = foundCustomer
-    ? customers.some(
-        (customer) =>
-          String(customer.customerId) ===
-          String(foundCustomer.customerId)
-      )
-    : false;
-
-  const getInitials = (customer) => {
-    const name =
-      customer.name || customer.customerName || "Customer";
-
-    return name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase();
-  };
+  // ========================================
+  // RENDER
+  // ========================================
 
   return (
-    
-    <>
-    {/* <ShopkeeperTopNav></ShopkeeperTopNav> */}
     <div className="my-customers-page">
-        
+
+      {/* PAGE HEADER */}
+
       <div className="mc-page-header">
         <div>
-          <div className="mc-eyebrow">SHOP MANAGEMENT</div>
+          <div className="mc-eyebrow">
+            SHOP MANAGEMENT
+          </div>
+
           <h1>My Customers</h1>
-          <p>Manage customers connected to your shop.</p>
+
+          <p>
+            Manage customers connected to your shop.
+          </p>
         </div>
 
         <button
@@ -221,10 +369,13 @@ export default function MyCustomers() {
         </button>
       </div>
 
+      {/* SUMMARY CARD */}
+
       <div className="mc-summary-card">
         <div className="mc-summary-icon">
           <FaUsers />
         </div>
+
         <div>
           <span>Total Customers</span>
           <strong>{customers.length}</strong>
@@ -232,9 +383,12 @@ export default function MyCustomers() {
         </div>
       </div>
 
+      {/* DIRECTORY HEADER */}
+
       <div className="mc-list-header">
         <div>
           <h2>Customer Directory</h2>
+
           <p>
             {filteredCustomers.length} customer
             {filteredCustomers.length !== 1 ? "s" : ""} shown
@@ -254,14 +408,20 @@ export default function MyCustomers() {
         </button>
       </div>
 
+      {/* SEARCH BOX */}
+
       <div className="mc-search-box">
         <FaSearch />
+
         <input
           type="search"
           placeholder="Search by name, customer ID, mobile or email..."
           value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
+          onChange={(event) =>
+            setSearchText(event.target.value)
+          }
         />
+
         {searchText && (
           <button
             type="button"
@@ -273,9 +433,15 @@ export default function MyCustomers() {
         )}
       </div>
 
-      {error && !showAddModal && (
-        <div className="mc-alert mc-alert-error">{error}</div>
+      {/* PAGE ERROR */}
+
+      {pageError && (
+        <div className="mc-alert mc-alert-error">
+          {pageError}
+        </div>
       )}
+
+      {/* CUSTOMER DIRECTORY */}
 
       {loading ? (
         <div className="mc-state">
@@ -287,9 +453,13 @@ export default function MyCustomers() {
           <div className="mc-empty-icon">
             <FaUsers />
           </div>
+
           <h3>
-            {searchText ? "No matching customers" : "No customers yet"}
+            {searchText
+              ? "No matching customers"
+              : "No customers yet"}
           </h3>
+
           <p>
             {searchText
               ? "Try a different name, ID, mobile number or email."
@@ -314,10 +484,12 @@ export default function MyCustomers() {
               className="mc-customer-card"
               key={customer.customerId}
             >
+
+              {/* CUSTOMER HEADER */}
+
               <div className="mc-customer-top">
-                <div className="mc-avatar">
-                  {getInitials(customer)}
-                </div>
+
+                <CustomerAvatar customer={customer} />
 
                 <div className="mc-customer-heading">
                   <h3>
@@ -325,17 +497,23 @@ export default function MyCustomers() {
                       customer.customerName ||
                       "Unnamed Customer"}
                   </h3>
+
                   <span className="mc-customer-id">
                     ID: {customer.customerId}
                   </span>
                 </div>
 
-                <span className="mc-linked-badge">Linked</span>
+                <span className="mc-linked-badge">
+                  Linked
+                </span>
               </div>
+
+              {/* CUSTOMER DETAILS */}
 
               <div className="mc-customer-details">
                 <div>
                   <FaPhone />
+
                   <span>
                     {customer.mobile ||
                       customer.phone ||
@@ -345,27 +523,28 @@ export default function MyCustomers() {
 
                 <div>
                   <FaEnvelope />
+
                   <span className="mc-detail-text">
-                    {customer.email || "Email not provided"}
+                    {customer.email ||
+                      "Email not provided"}
                   </span>
                 </div>
 
                 <div>
                   <FaCalendarAlt />
+
                   <span>
-                    {customer.createdAt || customer.linkedAt
-                      ? `Linked ${new Date(
-                          customer.linkedAt ||
-                            customer.createdAt
-                        ).toLocaleDateString()}`
-                      : "Customer linked"}
+                    {formatLinkedDate(customer)}
                   </span>
                 </div>
               </div>
+
             </article>
           ))}
         </div>
       )}
+
+      {/* ADD CUSTOMER MODAL */}
 
       {showAddModal && (
         <div
@@ -382,10 +561,18 @@ export default function MyCustomers() {
             aria-modal="true"
             aria-labelledby="mc-modal-title"
           >
+
+            {/* MODAL HEADER */}
+
             <div className="mc-modal-header">
               <div>
-                <h2 id="mc-modal-title">Add Customer</h2>
-                <p>Find an existing NearShop customer by ID.</p>
+                <h2 id="mc-modal-title">
+                  Add Customer
+                </h2>
+
+                <p>
+                  Find an existing NearShop customer by ID.
+                </p>
               </div>
 
               <button
@@ -399,6 +586,8 @@ export default function MyCustomers() {
               </button>
             </div>
 
+            {/* SEARCH FORM */}
+
             <form onSubmit={searchCustomer}>
               <label htmlFor="mc-customer-id">
                 Customer ID
@@ -406,6 +595,7 @@ export default function MyCustomers() {
 
               <div className="mc-id-search">
                 <FaIdCard />
+
                 <input
                   id="mc-customer-id"
                   type="text"
@@ -414,23 +604,31 @@ export default function MyCustomers() {
                   value={customerId}
                   onChange={(event) => {
                     setCustomerId(event.target.value);
-                    setError("");
+                    setModalError("");
+                    setSuccess("");
                     setFoundCustomer(null);
                   }}
                   required
                 />
 
-                <button type="submit" disabled={searching}>
+                <button
+                  type="submit"
+                  disabled={searching || adding}
+                >
                   {searching ? "Searching..." : "Search"}
                 </button>
               </div>
             </form>
 
-            {error && (
+            {/* MODAL ERROR */}
+
+            {modalError && (
               <div className="mc-alert mc-alert-error">
-                {error}
+                {modalError}
               </div>
             )}
+
+            {/* SUCCESS MESSAGE */}
 
             {success && (
               <div className="mc-alert mc-alert-success">
@@ -438,12 +636,13 @@ export default function MyCustomers() {
               </div>
             )}
 
+            {/* FOUND CUSTOMER */}
+
             {foundCustomer && (
               <div className="mc-found-customer">
+
                 <div className="mc-customer-top">
-                  <div className="mc-avatar">
-                    {getInitials(foundCustomer)}
-                  </div>
+                  <CustomerAvatar customer={foundCustomer} />
 
                   <div className="mc-customer-heading">
                     <h3>
@@ -451,6 +650,7 @@ export default function MyCustomers() {
                         foundCustomer.customerName ||
                         "Unnamed Customer"}
                     </h3>
+
                     <span className="mc-customer-id">
                       ID: {foundCustomer.customerId}
                     </span>
@@ -460,16 +660,20 @@ export default function MyCustomers() {
                 <div className="mc-customer-details">
                   <div>
                     <FaPhone />
+
                     <span>
                       {foundCustomer.mobile ||
                         foundCustomer.phone ||
                         "Mobile not provided"}
                     </span>
                   </div>
+
                   <div>
                     <FaEnvelope />
+
                     <span className="mc-detail-text">
-                      {foundCustomer.email || "Email not provided"}
+                      {foundCustomer.email ||
+                        "Email not provided"}
                     </span>
                   </div>
                 </div>
@@ -483,14 +687,18 @@ export default function MyCustomers() {
                     type="button"
                     className="mc-add-button mc-confirm-add"
                     onClick={addCustomer}
-                    disabled={adding}
+                    disabled={adding || searching}
                   >
                     <FaUserPlus />
-                    {adding ? "Adding..." : "Add to My Shop"}
+                    {adding
+                      ? "Adding..."
+                      : "Add to My Shop"}
                   </button>
                 )}
               </div>
             )}
+
+            {/* MODAL FOOTER */}
 
             <div className="mc-modal-footer">
               <button
@@ -502,9 +710,10 @@ export default function MyCustomers() {
                 Close
               </button>
             </div>
+
           </section>
         </div>
       )}
-    </div></>
+    </div>
   );
 }

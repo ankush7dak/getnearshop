@@ -148,14 +148,14 @@ export default function ShopkeeperTopNav() {
 
       {/* RIGHT: NOTIFICATIONS AND PROFILE */}
       <div className="sk-topnav-right">
-        <Link
+        {/* <Link
           to="/shopkeeper/notifications"
           className="icon-btn"
           aria-label="Notifications"
         >
           <FaBell />
           <span className="badge">3</span>
-        </Link>
+        </Link> */}
 
         {/* PROFILE DROPDOWN */}
         <div className="profile-wrapper" ref={dropdownRef}>
