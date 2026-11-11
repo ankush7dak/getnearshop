@@ -17,6 +17,7 @@ import "./ShopRegistration.css";
 import ShopkeeperTopNav from "../ShopkeeperTopNav/ShopkeeperTopNav";
 import { LINKS } from "../../../constants/LinksUtility";
 import { useNavigate } from "react-router-dom";
+import Loading from "../../Loading/Loading";
 
 /* Fix Leaflet marker icon issue */
 delete L.Icon.Default.prototype._getIconUrl;
@@ -52,6 +53,7 @@ const ShopRegistration = () => {
   const [showMap, setShowMap] = useState(false);
   const [markerPosition, setMarkerPosition] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [loading,setLoading] = useState(false);
 
   const indiaCenter = [20.5937, 78.9629];
 
@@ -148,12 +150,14 @@ const ShopRegistration = () => {
 
   /* Click to select location */
   const LocationSelector = () => {
+    setLoading(true);
     useMapEvents({
       click(e) {
+        
         const { lat, lng } = e.latlng;
 
         setMarkerPosition([lat, lng]);
-
+       
         setFormData((prev) => ({
           ...prev,
           latitude: lat.toFixed(6),
@@ -161,7 +165,7 @@ const ShopRegistration = () => {
         }));
       },
     });
-
+    setLoading(false);
     return markerPosition ? <Marker position={markerPosition} /> : null;
   };
 
@@ -179,7 +183,7 @@ const ShopRegistration = () => {
   /* Search control */
   const SearchControl = () => {
     const map = useMap();
-
+    setLoading(true);
     useEffect(() => {
       const provider = new OpenStreetMapProvider();
 
@@ -208,17 +212,18 @@ const ShopRegistration = () => {
           longitude: x.toFixed(6),
         }));
       });
-
+      setLoading(false);
       return () => {
         map.removeControl(searchControl);
       };
     }, [map]);
-
+    setLoading(false);
     return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     if (formData.mobile.length !== 10) {
       alert("Mobile number must be 10 digits");
@@ -250,7 +255,13 @@ const ShopRegistration = () => {
         withCredentials: true
       });
         if (res.data === true) {
+          setLoading(false);
           alert("Shop Registered Successfully! click on ok to move to Dashboard");
+          navigate("/shopkeeper/dashboard");
+        }
+        if (res.data === false) {
+          setLoading(false);
+          alert("Shop Already Registered!!");
           navigate("/shopkeeper/dashboard");
         }
     } catch (error) {
@@ -261,10 +272,10 @@ const ShopRegistration = () => {
 
   return (
     <>
-      <ShopkeeperTopNav />
+      {/*<ShopkeeperTopNav />*/}
       <div className="shop-form-container">
         <h2>Shop Registration</h2>
-
+        {loading && <Loading></Loading> }
         <form onSubmit={handleSubmit} className="shop-form">
 
           <div className="form-group">
@@ -367,7 +378,7 @@ const ShopRegistration = () => {
               <h3>Select Shop Location</h3>
               <button onClick={() => setShowMap(false)}>Close ✖</button>
             </div>
-
+          {loading && <Loading></Loading>}
             <MapContainer
               center={markerPosition || indiaCenter}
               zoom={markerPosition ? 15 : 5}

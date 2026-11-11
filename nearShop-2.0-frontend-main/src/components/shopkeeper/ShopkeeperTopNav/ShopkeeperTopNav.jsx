@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
 import {
-  FaBell,
   FaUserCircle,
   FaStore,
 } from "react-icons/fa";
@@ -18,10 +17,11 @@ export default function ShopkeeperTopNav() {
   const [shopOpen, setShopOpen] = useState(null);
   const [shopName, setShopName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const dropdownRef = useRef(null);
 
-  // Fetch shop name and status
+  // Fetch shop name and opening status
   useEffect(() => {
     const controller = new AbortController();
 
@@ -39,12 +39,10 @@ export default function ShopkeeperTopNav() {
 
         const data = response.data;
 
-        console.log("Shop navigation data:", data);
-
         setShopName(data?.shopName ?? "");
 
-        // Handle boolean or string responses
         const active = data?.isActive;
+
         setShopOpen(
           active === true ||
           active === "true" ||
@@ -55,10 +53,7 @@ export default function ShopkeeperTopNav() {
           error.code !== "ERR_CANCELED" &&
           error.name !== "CanceledError"
         ) {
-          console.error(
-            "Failed to fetch shop navigation data:",
-            error.response?.data || error.message
-          );
+          console.error("Failed to fetch shop data:", error);
 
           setShopName("");
           setShopOpen(null);
@@ -75,7 +70,52 @@ export default function ShopkeeperTopNav() {
     return () => controller.abort();
   }, []);
 
-  // Close profile dropdown when clicking outside
+  // Toggle shop open/closed status
+  const handleShopStatusToggle = async () => {
+    if (shopOpen === null || updatingStatus) return;
+
+    const previousStatus = shopOpen;
+    const newStatus = !previousStatus;
+
+    try {
+      setUpdatingStatus(true);
+
+      // Update status in backend
+      const response = await axios.post(
+        `${LINKS.API_BASE_URL}/api/shop/updateShopStatus`,
+        {
+          
+        },
+        {
+          withCredentials: true,
+          params : {isActive: newStatus}
+        }
+      );
+
+      // Update UI after successful API response
+      setShopOpen(
+        response.data?.isActive ?? newStatus
+      );
+
+    } catch (error) {
+      console.error(
+        "Failed to update shop status:",
+        error.response?.data || error.message
+      );
+
+      // Restore previous status
+      setShopOpen(previousStatus);
+
+      alert(
+        error.response?.data?.message ||
+        "Unable to update shop status. Please try again."
+      );
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  // Close profile dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -98,112 +138,122 @@ export default function ShopkeeperTopNav() {
 
   return (
     <>
-    <header className="sk-topnav">
-      <HamburgerMenu />
-      {/* LEFT: SHOP NAME AND STATUS */}
-      <div className="sk-topnav-left">
-        <FaStore className="logo-icon" />
+      <header className="sk-topnav">
 
-        <h2 className="shopname">
-          {loading
-            ? "Loading shop..."
-            : shopName || "My Shop"}
-        </h2>
+        <HamburgerMenu />
 
-        {!loading && (
-          <>
-            {shopOpen === true && (
+        {/* LEFT: SHOP NAME AND STATUS */}
+        <div className="sk-topnav-left">
+
+          {/* <FaStore className="logo-icon" /> */}
+
+          {/* <h2 className="shopname">
+            {loading
+              ? "Loading shop..."
+              : shopName || "My Shop"}
+          </h2> */}
+
+          {/* SHOP STATUS TOGGLE */}
+          {!loading && (
+            <div className="shop-status-container">
+
+              <span
+                className={`shop-status-label ${
+                  shopOpen ? "open" : "closed"
+                }`}
+              >
+                {shopOpen === null
+                  ? "Unavailable"
+                  : shopOpen
+                  ? "Open"
+                  : "Closed"}
+              </span>
+
               <button
                 type="button"
-                className="shop-status-btn open"
+                className={`shop-status-toggle ${
+                  shopOpen ? "is-open" : "is-closed"
+                }`}
+                onClick={handleShopStatusToggle}
+                disabled={
+                  shopOpen === null || updatingStatus
+                }
+                role="switch"
+                aria-checked={shopOpen === true}
+                aria-label="Toggle shop opening status"
+                title={
+                  shopOpen
+                    ? "Click to close shop"
+                    : "Click to open shop"
+                }
               >
-                Open
+                <span className="shop-status-toggle-circle">
+                  {updatingStatus && (
+                    <span className="status-spinner" />
+                  )}
+                </span>
               </button>
-            )}
 
-            {shopOpen === false && (
-              <button
-                type="button"
-                className="shop-status-btn closed"
-              >
-                Closed
-              </button>
-            )}
+              {updatingStatus && (
+                <span className="status-saving">
+                  Updating...
+                </span>
+              )}
 
-            {shopOpen === null && (
-              <button
-                type="button"
-                className="shop-status-btn closed"
-                disabled
-              >
-                Status unavailable
-              </button>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* HAMBURGER MENU */}
-      
-
-      {/* RIGHT: NOTIFICATIONS AND PROFILE */}
-      <div className="sk-topnav-right">
-        {/* <Link
-          to="/shopkeeper/notifications"
-          className="icon-btn"
-          aria-label="Notifications"
-        >
-          <FaBell />
-          <span className="badge">3</span>
-        </Link> */}
-
-        {/* PROFILE DROPDOWN */}
-        <div className="profile-wrapper" ref={dropdownRef}>
-          <button
-            type="button"
-            className="profile-btn"
-            onClick={() =>
-              setProfileOpen((previous) => !previous)
-            }
-            aria-label="Profile menu"
-            aria-expanded={profileOpen}
-          >
-            <FaUserCircle />
-          </button>
-
-          {profileOpen && (
-            <div className="profile-dropdown">
-              <Link
-                to="/shopkeeper/profile"
-                onClick={() => setProfileOpen(false)}
-              >
-                My Profile
-              </Link>
-
-              {/* <Link
-                to="/shopkeeper/shop"
-                onClick={() => setProfileOpen(false)}
-              >
-                Shop Settings
-              </Link> */}
-
-              {/* <Link
-                to="/shopkeeper/bank"
-                onClick={() => setProfileOpen(false)}
-              >
-                Bank Details
-              </Link> */}
-
-              <hr />
-
-              <Logout />
             </div>
           )}
+
         </div>
-      </div>
-      
-    </header>
-    <Outlet></Outlet></>
-    
+        {/* <FaStore className="logo-icon" /> */}
+        <h2 className="shopname">
+            {loading
+              ? "Loading shop..."
+              : shopName || "My Shop"}
+          </h2>
+        <FaStore className="logo-icon" />
+
+        {/* RIGHT: PROFILE */}
+        {/* <div className="sk-topnav-right">
+
+          <div
+            className="profile-wrapper"
+            ref={dropdownRef}
+          >
+            <button
+              type="button"
+              className="profile-btn"
+              onClick={() =>
+                setProfileOpen((previous) => !previous)
+              }
+              aria-label="Profile menu"
+              aria-expanded={profileOpen}
+            >
+              <FaUserCircle />
+            </button>
+
+            {profileOpen && (
+              <div className="profile-dropdown">
+
+                <Link
+                  to="/shopkeeper/profile"
+                  onClick={() => setProfileOpen(false)}
+                >
+                  My Profile
+                </Link>
+
+                <hr />
+
+                <Logout />
+
+              </div>
+            )}
+          </div>
+
+        </div> */}
+
+      </header>
+
+      <Outlet />
+    </>
   );
 }

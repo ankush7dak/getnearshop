@@ -14,6 +14,7 @@
 
 .shopname{
   font-size: smaller;
+  padding: 5px;
 
 }
 
@@ -30,7 +31,8 @@
 
 .logo-icon {
   font-size: 22px;
-  color: #2563eb;
+  color: #05910c;
+  margin: 5px;
 }
 
 /* RIGHT */
@@ -162,6 +164,142 @@
   }
 
   .shop-status-btn {
+    display: none;
+  }
+}
+
+
+
+/* Shop status container */
+.shop-status-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* margin-left: 15px; */
+  margin: 5px;
+}
+
+/* Open / Closed label */
+.shop-status-label {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shop-status-label.open {
+  color: #16a34a;
+}
+
+.shop-status-label.closed {
+  color: #dc2626;
+}
+
+/* Toggle switch */
+.shop-status-toggle {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  border: none;
+  border-radius: 30px;
+  padding: 3px;
+  cursor: pointer;
+  transition: background 0.25s ease;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.shop-status-toggle.is-open {
+  background: #16a34a;
+  justify-content: flex-end;
+}
+
+.shop-status-toggle.is-closed {
+  background: #dc2626;
+  justify-content: flex-start;
+}
+
+.shop-status-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Toggle circle */
+.shop-status-toggle-circle {
+  width: 20px;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Updating spinner */
+.status-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #d1d5db;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: status-spin 0.7s linear infinite;
+}
+
+@keyframes status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status-saving {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* Keyboard accessibility */
+.shop-status-toggle:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+  .sk-topnav-left {
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .shopname {
+    font-size: 15px;
+    max-width: 125px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shop-status-container {
+    margin-left: 5px;
+    gap: 6px;
+  }
+
+  .shop-status-label {
+    font-size: 11px;
+  }
+
+  .shop-status-toggle {
+    width: 42px;
+    height: 24px;
+  }
+
+  .shop-status-toggle-circle {
+    width: 18px;
+    height: 18px;
+  }
+
+  .status-saving {
     display: none;
   }
 }

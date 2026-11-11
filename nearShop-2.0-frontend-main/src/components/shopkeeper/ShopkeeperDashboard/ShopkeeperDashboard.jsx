@@ -22,6 +22,7 @@ export default function ShopkeeperDashboard() {
   const [productCount, setProductCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [newOrders, setNewOrders] = useState(0);
+  const [isRegistered,setIsRegistered] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -37,6 +38,7 @@ export default function ShopkeeperDashboard() {
       setProductCount(response.data.productCount || 0);
       setTotalRevenue(response.data.totalRevenue || 0);
       setNewOrders(response.data.newOrders || 0);
+      setIsRegistered(response.data.shopRegistered);
     } catch (error) {
       console.error("Dashboard fetch error:", error);
     }
@@ -58,13 +60,15 @@ export default function ShopkeeperDashboard() {
             <div className="sk-dashboard-heading-icon">
               <FaChartLine />
             </div>
-
+      
             <div>
               <h2>Dashboard</h2>
+              
 
               <p>
                 Welcome back! Here's your shop overview.
               </p>
+              {!isRegistered && <h4><Link to = "/shopkeeper/registration">Click to Register your shop</Link></h4>}
             </div>
           </div>
 
