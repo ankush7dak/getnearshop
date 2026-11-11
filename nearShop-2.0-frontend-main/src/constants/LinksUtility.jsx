@@ -1,9 +1,10 @@
 export const LINKS = {
 
   //API_BASE_URL: "https://nearshop-2-0-backend.onrender.com",
-    //API_BASE_URL: "https://api.getnearshop.in",
+  
+    API_BASE_URL: "https://api.getnearshop.in",
 
-   API_BASE_URL: "http://localhost:8081",
+   //API_BASE_URL: "http://localhost:8081",
 
     //API_BASE_URL: "https://192.168.29.8:8081",
 
