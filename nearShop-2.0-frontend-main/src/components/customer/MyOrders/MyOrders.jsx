@@ -60,7 +60,7 @@ export default function MyOrders() {
           "PLACED",
           "CONFIRMED",
           "PROCESSING",
-          "OUT_FOR_DELIVERY",
+          "READY_FOR_PICKUP",
         ].includes(order.orderStatus)
       );
     } else if (activeTab === "Delivered") {
@@ -124,7 +124,7 @@ export default function MyOrders() {
       PLACED: "Placed",
       CONFIRMED: "Confirmed",
       PROCESSING: "Processing",
-      OUT_FOR_DELIVERY: "Out for Delivery",
+      READY_FOR_PICKUP: "Your Order is Ready now!!",
       DELIVERED: "Delivered",
       CANCELLED: "Cancelled",
     };
@@ -138,7 +138,7 @@ export default function MyOrders() {
         "PLACED",
         "CONFIRMED",
         "PROCESSING",
-        "OUT_FOR_DELIVERY",
+        "READY_FOR_PICKUP",
       ].includes(status)
     ) {
       return "active";
@@ -182,7 +182,7 @@ export default function MyOrders() {
     "PLACED",
     "CONFIRMED",
     "PROCESSING",
-    "OUT_FOR_DELIVERY",
+    "READY_FOR_PICKUP",
   ];
 
   return (

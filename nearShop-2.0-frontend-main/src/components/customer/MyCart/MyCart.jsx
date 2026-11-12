@@ -7,7 +7,7 @@ import Loading from "../../Loading/Loading";
 
 
 
-  
+
 
 const MyCart = () => {
   const [showPayment, setShowPayment] = useState(false);
@@ -17,31 +17,35 @@ const MyCart = () => {
   const [cart, setCart] = useState({});
   const [loading, setLoading] = useState(false);
   const [shopId, setShopId] = useState(0);
+  const [shopName, setShopName] = useState('');
+  const [shopProfileUrl, setShopProfileUrl] = useState('');
 
-  const DELIVERY_FEE = 30;
+  const DELIVERY_FEE = 0;
 
-  const fetchCartData = async ()=>{
-    try{
+  const fetchCartData = async () => {
+    try {
       setLoading(true);
-      const res = await axios.get(`${LINKS.API_BASE_URL}/api/customer/getMyCartData`,{
-        withCredentials : true
+      const res = await axios.get(`${LINKS.API_BASE_URL}/api/customer/getMyCartData`, {
+        withCredentials: true
       });
-      if (res.data.length > 0) {
-        setCartProducts(res.data);
-        setShopId(res.data[0].shopId);
-        handleGetCartData(res.data[0].shopId);
+      if (res.data.lstProductDTO.length > 0) {
+        setCartProducts(res.data.lstProductDTO);
+        setShopId(res.data.lstProductDTO[0].shopId);
+        handleGetCartData(res.data.lstProductDTO[0].shopId);
+        setShopName(res.data.shopName);
+        setShopProfileUrl(res.data.shopProfileUrl);
       } else {
         setCartProducts([]);
         setShopId(0);
       }
-    }catch(e){
+    } catch (e) {
       console.error(e);
-    }finally{
+    } finally {
       setLoading(false);
     }
   }
 
-  const placeOrder = async ()=> {
+  const placeOrder = async () => {
     try {
       // Validation
       if (cartProducts.length === 0) {
@@ -99,7 +103,7 @@ const MyCart = () => {
         }
       );
 
-      if (response.data ) {
+      if (response.data) {
         // Order created successfully - show payment modal
         alert("Order created successfully");
         window.location.reload();
@@ -109,9 +113,9 @@ const MyCart = () => {
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          "Failed to place order. Please try again.";
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        "Failed to place order. Please try again.";
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -119,27 +123,27 @@ const MyCart = () => {
   }
 
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchCartData();
-  },[]);
+  }, []);
 
-   const handleGetCartData = async (id)=>{
-      try{
-        setLoading(true);
-        const res = await axios.get(`${LINKS.API_BASE_URL}/api/customer/getCartQuantities`,{
-          withCredentials: true,
-          params :{
-            shopId : id
-          }
-        });
-        setCart(res.data || {});
-      }catch(e){
-        console.error("Error fetching cart data:", e);
-        setCart({});
-      }finally{
-        setLoading(false);
-      }
+  const handleGetCartData = async (id) => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${LINKS.API_BASE_URL}/api/customer/getCartQuantities`, {
+        withCredentials: true,
+        params: {
+          shopId: id
+        }
+      });
+      setCart(res.data || {});
+    } catch (e) {
+      console.error("Error fetching cart data:", e);
+      setCart({});
+    } finally {
+      setLoading(false);
     }
+  }
 
   const subtotal = useMemo(() => {
     return cartProducts.reduce(
@@ -196,7 +200,7 @@ const MyCart = () => {
       }
     } catch (e) {
       console.error("Error updating cart:", e);
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -222,191 +226,200 @@ const MyCart = () => {
 
   return (
     <>
-    {/* <NearShopNavBar /> */}
+      {/* <NearShopNavBar /> */}
 
-    <div className="my-cart-container">
-      {loading && (
-        <Loading></Loading>
-      )}
-      <div className="cart-page">
-        {/* =============================
+      <div className="my-cart-container">
+        {loading && (
+          <Loading></Loading>
+        )}
+        <div className="cart-page">
+          {/* =============================
             CART ITEMS
         ============================= */}
-        <div className="cart-items">
-          <h2>My Cart</h2>
+          <div className="cart-items">
+            <h2>My Cart</h2>
+            {shopId !=0  && <div className="shop-data">
+              <img
+                src={shopProfileUrl}
+                alt="Shop"
+                className="shop-image"
+              />
+              <span className="shop-name">{shopName}</span>
+            </div> }
+                     {cartProducts.length === 0 && (
+              <p className="empty-cart">Your cart is empty</p>
+            )}
 
-          {cartProducts.length === 0 && (
-            <p className="empty-cart">Your cart is empty</p>
-          )}
+            {cartProducts.map((item) => (
+              <div className="cart-item" key={item.productId}>
+                <img src={item.imageLink} alt={item.name} loading="lazy" />
 
-          {cartProducts.map((item) => (
-            <div className="cart-item" key={item.productId}>
-              <img src={item.imageLink} alt={item.name} loading="lazy"/>
+                <div className="cart-info">
+                  <h4>{item.name}</h4>
+                  <p>₹{item.price}</p>
+                  <span className="stock-text">
+                    {item.stock > 0 ? "In Stock" : "Out of Stock"}
+                  </span>
+                </div>
 
-              <div className="cart-info">
-                <h4>{item.name}</h4>
-                <p>₹{item.price}</p>
-                <span className="stock-text">
-                  {item.stock > 0 ? "In Stock" : "Out of Stock"}
-                </span>
+                <div className="cart-qty">
+                  {cart[item.productId] ? (
+                    <>
+                      <button onClick={() => addOrDeleteToCart(item, 'delete')}>-</button>
+                      <span>{cart[item.productId]}</span>
+                      <button onClick={() => addOrDeleteToCart(item, 'add')}>+</button>
+                    </>) : ''}
+                </div>
+
+                <div className="cart-total">
+                  ₹{item.price * (cart[item.productId] || 0)}
+                </div>
+
+                <button
+                  className="remove-btn"
+                  onClick={() => removeItem(item)}
+                >
+                  ✕
+                </button>
               </div>
+            ))}
+          </div>
 
-              <div className="cart-qty">
-                {cart[item.productId] ? (
-                        <>
-                          <button onClick={() => addOrDeleteToCart(item, 'delete')}>-</button>
-                          <span>{cart[item.productId]}</span>
-                          <button onClick={() => addOrDeleteToCart(item, 'add')}>+</button>
-                        </>):''}
-              </div>
-
-              <div className="cart-total">
-                ₹{item.price * (cart[item.productId] || 0)}
-              </div>
-
-              <button
-                className="remove-btn"
-                onClick={() => removeItem(item)}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* =============================
+          {/* =============================
             SUMMARY
         ============================= */}
-        <div className="cart-summary">
-          <h3>Order Summary</h3>
+          <div className="cart-summary">
+            <h3>Order Summary</h3>
 
-          <div className="summary-row">
-            <span>Subtotal</span>
-            <span>₹{subtotal}</span>
-          </div>
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>₹{subtotal}</span>
+            </div>
 
-          <div className="summary-row">
+            {/* <div className="summary-row">
             <span>Delivery</span>
             <span>₹{DELIVERY_FEE}</span>
-          </div>
+          </div> */}
 
-          {discount > 0 && (
-            <div className="summary-row green">
-              <span>Discount</span>
-              <span>-₹{discountAmount.toFixed(0)}</span>
-            </div>
-          )}
+            {discount > 0 && (
+              <div className="summary-row green">
+                <span>Discount</span>
+                <span>-₹{discountAmount.toFixed(0)}</span>
+              </div>
+            )}
 
-          <div className="coupon-box">
-            <input
-              placeholder="Enter coupon"
-              value={coupon}
-              onChange={(e) => setCoupon(e.target.value)}
-            />
-            <button onClick={applyCoupon}>Apply</button>
-          </div>
-
-          <hr />
-
-          <div className="summary-row total">
-            <span>Total</span>
-            <span>₹{total.toFixed(0)}</span>
-          </div>
-
-          <button
-            className="pay-btn"
-            disabled={cartProducts.length === 0}
-            onClick={() => placeOrder()}
-          >
-            Place your order
-          </button>
-        </div>
-      </div>
-
-      {/* =============================
-          PAYMENT MODAL
-      ============================= */}
-      {showPayment && (
-        <div className="payment-overlay">
-          <div className="payment-modal">
-            <h3>Select Payment Method</h3>
-
-            <div className="payment-method">
-              <label>
-                <input type="radio" name="pay" defaultChecked /> UPI
-              </label>
-              <label>
-                <input type="radio" name="pay" /> Card
-              </label>
-              <label>
-                <input type="radio" name="pay" /> Cash on Delivery
-              </label>
+            <div className="coupon-box">
+              <input
+                placeholder="Enter coupon"
+                value={coupon}
+                onChange={(e) => setCoupon(e.target.value)}
+              />
+              <button onClick={applyCoupon}>Apply</button>
             </div>
 
-            <div className="summary-row total" style={{ marginBottom: '18px' }}>
-              <span>{totalItems} items</span>
+            <hr />
+
+            <div className="summary-row total">
+              <span>Total</span>
               <span>₹{total.toFixed(0)}</span>
             </div>
 
             <button
-              className="confirm-pay"
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  
-                  // Get selected payment method
-                  const paymentMethodElement = document.querySelector('input[name="pay"]:checked');
-                  const paymentMethod = paymentMethodElement?.labels?.[0]?.textContent?.trim() || "UPI";
-
-                  // Call backend to confirm payment
-                  const paymentResponse = await axios.post(
-                    `${LINKS.API_BASE_URL}/api/customer/confirmPayment`,
-                    {
-                      totalAmount: Math.round(total),
-                      paymentMethod: paymentMethod,
-                      orderId: null // Backend will get orderId from session
-                    },
-                    {
-                      withCredentials: true
-                    }
-                  );
-
-                  if (paymentResponse.data && paymentResponse.data.success) {
-                    alert("Payment Successful 🎉");
-                    setShowPayment(false);
-                    setCartProducts([]);
-                    setCart({});
-                    setCoupon("");
-                    setDiscount(0);
-                    setShopId(0);
-                    // Refresh cart data
-                    setTimeout(() => fetchCartData(), 500);
-                  } else {
-                    alert("Payment processing failed. Please try again.");
-                  }
-                } catch (error) {
-                  console.error("Payment error:", error);
-                  alert(error.response?.data?.message || "Payment failed. Please try again.");
-                } finally {
-                  setLoading(false);
-                }
-              }}
+              className="pay-btn"
+              disabled={cartProducts.length === 0}
+              onClick={() => placeOrder()}
             >
-              Pay ₹{total.toFixed(0)}
+              Place your order
             </button>
+            <i>After placing check the order status if it shows Ready then you can go for pickup.</i>
 
-            <button
-              className="close-btn"
-              onClick={() => setShowPayment(false)}
-            >
-              Cancel
-            </button>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* =============================
+          PAYMENT MODAL
+      ============================= */}
+        {showPayment && (
+          <div className="payment-overlay">
+            <div className="payment-modal">
+              <h3>Select Payment Method</h3>
+
+              <div className="payment-method">
+                <label>
+                  <input type="radio" name="pay" defaultChecked /> UPI
+                </label>
+                <label>
+                  <input type="radio" name="pay" /> Card
+                </label>
+                <label>
+                  <input type="radio" name="pay" /> Cash on Delivery
+                </label>
+              </div>
+
+              <div className="summary-row total" style={{ marginBottom: '18px' }}>
+                <span>{totalItems} items</span>
+                <span>₹{total.toFixed(0)}</span>
+              </div>
+
+              <button
+                className="confirm-pay"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+
+                    // Get selected payment method
+                    const paymentMethodElement = document.querySelector('input[name="pay"]:checked');
+                    const paymentMethod = paymentMethodElement?.labels?.[0]?.textContent?.trim() || "UPI";
+
+                    // Call backend to confirm payment
+                    const paymentResponse = await axios.post(
+                      `${LINKS.API_BASE_URL}/api/customer/confirmPayment`,
+                      {
+                        totalAmount: Math.round(total),
+                        paymentMethod: paymentMethod,
+                        orderId: null // Backend will get orderId from session
+                      },
+                      {
+                        withCredentials: true
+                      }
+                    );
+
+                    if (paymentResponse.data && paymentResponse.data.success) {
+                      alert("Payment Successful 🎉");
+                      setShowPayment(false);
+                      setCartProducts([]);
+                      setCart({});
+                      setCoupon("");
+                      setDiscount(0);
+                      setShopId(0);
+                      // Refresh cart data
+                      setTimeout(() => fetchCartData(), 500);
+                    } else {
+                      alert("Payment processing failed. Please try again.");
+                    }
+                  } catch (error) {
+                    console.error("Payment error:", error);
+                    alert(error.response?.data?.message || "Payment failed. Please try again.");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                Pay ₹{total.toFixed(0)}
+              </button>
+
+              <button
+                className="close-btn"
+                onClick={() => setShowPayment(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </>
-    
+
   );
 };
 

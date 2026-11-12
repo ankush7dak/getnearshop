@@ -61,6 +61,8 @@ const SHOPS = [
 
 export function CustomerProvider({ children }) {
     const [shopDetails, setShopDetails] = useState(null);
+    const [shopActive,setShopActive] = useState(false);
+    const [currShopName,setCurrShopName] = useState("");
 
     useEffect(() => {
 
@@ -80,7 +82,9 @@ export function CustomerProvider({ children }) {
     }, []);
 
     return (
-        <CustomerContext.Provider value={{ shopDetails, setShopDetails }}>
+        <CustomerContext.Provider value={{ shopDetails, setShopDetails ,shopActive,currShopName,
+        setShopActive,
+        setCurrShopName}}>
             {children}
         </CustomerContext.Provider>
     );

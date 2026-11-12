@@ -11,6 +11,7 @@ import "./ShopkeeperTopNav.css";
 import HamburgerMenu from "../../Hamburgers/HamburgerMenu";
 import Logout from "../../LoginSignup/Logout";
 import { LINKS } from "../../../constants/LinksUtility";
+import { useCustomer } from "../../customer/CustomerContext/CustomerContext";
 
 export default function ShopkeeperTopNav() {
   const [profileOpen, setProfileOpen] = useState(false);
@@ -18,7 +19,7 @@ export default function ShopkeeperTopNav() {
   const [shopName, setShopName] = useState("");
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-
+  const {currShopName,shopActive} = useCustomer();
   const dropdownRef = useRef(null);
 
   // Fetch shop name and opening status
@@ -68,7 +69,7 @@ export default function ShopkeeperTopNav() {
     fetchNavData();
 
     return () => controller.abort();
-  }, []);
+  }, [shopActive,currShopName]);
 
   // Toggle shop open/closed status
   const handleShopStatusToggle = async () => {

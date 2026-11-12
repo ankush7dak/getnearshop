@@ -23,6 +23,12 @@ export default function ShopkeeperDashboard() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [newOrders, setNewOrders] = useState(0);
   const [isRegistered,setIsRegistered] = useState(false);
+  const [showRegister,setShowRegister] = useState(false);
+
+ setTimeout(() => {
+  console.log(showRegister);
+  setShowRegister(true);
+}, 2000);
 
   const fetchDashboardData = async () => {
     try {
@@ -68,7 +74,7 @@ export default function ShopkeeperDashboard() {
               <p>
                 Welcome back! Here's your shop overview.
               </p>
-              {!isRegistered && <h4><Link to = "/shopkeeper/registration">Click to Register your shop</Link></h4>}
+              {showRegister && !isRegistered && <h4><Link to = "/shopkeeper/registration">Click to Register your shop</Link></h4>}
             </div>
           </div>
 
@@ -110,22 +116,22 @@ export default function ShopkeeperDashboard() {
               description="Products in your inventory"
             />
 
-            <StatCard
+            {/* <StatCard
               icon={<FaBoxes />}
               title="Low Stock"
               value="8"
-              link="/shopkeeper/stocks"
+              link="/shopkeeper/dashboard"
               variant="orange"
               danger
               description="Products running low"
-            />
+            /> */}
 
             <StatCard
               icon={<FaRupeeSign />}
-              title="Today's Revenue"
+              title="Total Revenue"
               value={totalRevenue}
               variant="green"
-              description="Revenue generated today"
+              description="Total Revenue generated"
             />
           </div>
         </section>

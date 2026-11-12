@@ -21,7 +21,7 @@ const STATUS_TABS = [
   "PLACED",
   "CONFIRMED",
   "PROCESSING",
-  "OUT_FOR_DELIVERY",
+  "READY_FOR_PICKUP",
   "DELIVERED",
   "CANCELLED",
 ];
@@ -30,7 +30,7 @@ const STATUS_LABELS = {
   PLACED: "New",
   CONFIRMED: "Accepted",
   PROCESSING: "Preparing",
-  OUT_FOR_DELIVERY: "Out for delivery",
+  READY: "You can pickup now",
   DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
 };
@@ -365,11 +365,11 @@ export default function ShopkeeperOrders() {
             <button
               className="order-btn delivery"
               onClick={() =>
-                performAction(order, "status", "OUT_FOR_DELIVERY")
+                performAction(order, "status", "READY_FOR_PICKUP")
               }
               disabled={busy}
             >
-              <FaTruck /> Out for delivery
+              <FaTruck />Ready for pickup
             </button>
 
             <button
@@ -384,7 +384,7 @@ export default function ShopkeeperOrders() {
           </>
         )}
 
-        {status === "OUT_FOR_DELIVERY" && (
+        {status === "READY_FOR_PICKUP" && (
           <button
             className="order-btn complete"
             onClick={() =>

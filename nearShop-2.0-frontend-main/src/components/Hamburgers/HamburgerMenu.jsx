@@ -20,7 +20,7 @@ const HamburgerMenu = () => {
       { name: "My Cart", path: "/customer/cart" },
       { name: "My Orders", path: "/customer/orders" },
       { name: "My Profile", path: "/customer/profile" },
-      { name: "Notifications", path: "/customer/notifications" },
+      // { name: "Notifications", path: "/customer/notifications" },
       { name: "Logout", path: "/login" },
     ],
 

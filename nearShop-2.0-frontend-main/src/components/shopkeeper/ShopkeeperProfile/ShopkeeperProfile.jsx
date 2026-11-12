@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import {
   FaStore,
@@ -21,7 +21,9 @@ import {
 import "./ShopkeeperProfile.css";
 import { LINKS } from "../../../constants/LinksUtility";
 import Loading from "../../Loading/Loading";
+// import {setCurrShopName} from useCustomer(customerco);
 
+import { useCustomer } from "../../customer/CustomerContext/CustomerContext";
 const INITIAL_PROFILE = {
   ownerName: "",
   email: "",
@@ -47,6 +49,9 @@ export default function ShopkeeperProfile() {
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [originalProfile, setOriginalProfile] = useState(INITIAL_PROFILE);
 
+  const {setCurrShopName,setShopActive} = useCustomer();
+
+
   const [categories, setCategories] = useState([]);
 
   const [imageUrl, setImageUrl] = useState("");
@@ -60,6 +65,8 @@ export default function ShopkeeperProfile() {
   const [success, setSuccess] = useState("");
 
   const fileInputRef = useRef(null);
+  //hello_ak
+
 
   // Fetch shop profile
   const fetchShopProfileData = async () => {
@@ -74,6 +81,7 @@ export default function ShopkeeperProfile() {
 
       const userDTO = res.data.userDTO;
       const shopDTO = res.data.shopDTO;
+      
 
       const addressParts = (shopDTO.address || "").split("$");
 
@@ -322,6 +330,8 @@ export default function ShopkeeperProfile() {
           withCredentials: true,
         }
       );
+      setCurrShopName( profile.shopName);
+      setShopActive(profile.isActive);
 
       setSuccess("Shop profile updated successfully!");
 
@@ -503,7 +513,7 @@ export default function ShopkeeperProfile() {
                 value={profile.email}
                 onChange={handleChange}
                 required
-                disabled={disabled}
+                disabled
               />
             </div>
 
@@ -563,7 +573,7 @@ export default function ShopkeeperProfile() {
               <label>Shop ID</label>
               <input
                 value={profile.shopId}
-                readOnly
+                disabled
               />
             </div>
 
