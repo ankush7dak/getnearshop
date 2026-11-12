@@ -115,13 +115,14 @@ export default function ShopkeeperProfile() {
       setOriginalProfile(fetchedProfile);
 
       // Change this mapping if your ShopDTO uses another property.
-      setImageUrl(
-        profile.logoUrl ||
-        shopDTO.logoUrl ||
-        shopDTO.logo ||
-        shopDTO.imageUrl ||
-        ""
-      );
+     const newLogoUrl =
+  res.data.logoUrl ||
+  shopDTO.logoUrl ||
+  shopDTO.logo ||
+  shopDTO.imageUrl ||
+  "";
+
+setImageUrl(newLogoUrl);
 
       setImagePreview("");
       setImageFile(null);
