@@ -6,6 +6,7 @@ import axios from "axios";
 import { LINKS } from "../../../constants/LinksUtility";
 import AddSubCategoryModal from "./AddSubCategoryModal/AddSubCategoryModal";
 import Loading from "../../Loading/Loading";
+import { compressImage } from "../../../Utils/imageCompression";
 
 
 export default function ShopkeeperAddProduct() {
@@ -71,8 +72,12 @@ export default function ShopkeeperAddProduct() {
 
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = async (e) => {
+    let  file = e.target.files[0];
+          file = await compressImage(file);
+          file = await compressImage(file);
+
+    
     if (!file) return;
 
     setImage(file);

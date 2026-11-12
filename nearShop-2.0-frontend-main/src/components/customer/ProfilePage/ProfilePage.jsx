@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./ProfilePage.css";
 import { LINKS } from "../../../constants/LinksUtility";
+import { compressImage } from "../../../Utils/imageCompression";
 
 const EMPTY_PROFILE = {
   customerId: "",
@@ -135,9 +136,15 @@ export default function ProfilePage() {
   };
 
   // Select profile image
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
+  const handleImageChange = async (e) => {
+    let  file = e.target.files?.[0];
+    try{
+      file = await compressImage(file);
+      file = await compressImage(file);
 
+    }catch(e){
+      alert("unable to process image!!");
+    }
     if (!file) return;
 
     setError("");

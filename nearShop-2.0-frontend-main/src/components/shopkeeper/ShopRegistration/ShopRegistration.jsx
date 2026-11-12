@@ -18,6 +18,7 @@ import ShopkeeperTopNav from "../ShopkeeperTopNav/ShopkeeperTopNav";
 import { LINKS } from "../../../constants/LinksUtility";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../Loading/Loading";
+import { compressImage } from "../../../Utils/imageCompression";
 
 /* Fix Leaflet marker icon issue */
 delete L.Icon.Default.prototype._getIconUrl;
@@ -108,11 +109,13 @@ const ShopRegistration = () => {
   }, [formData.latitude, formData.longitude]);
 
   const handleChange = async (e) => {
-    const { name, value, files } = e.target;
+    let { name, value, files } = e.target;
     console.log(name + value);
 
     if (files) {
-      setFormData({ ...formData, [name]: files[0] });
+      let file = await compressImage(files[0]);
+        file = await compressImage(files[0]);
+      setFormData({ ...formData, [name]: file });
       return;
     }
 

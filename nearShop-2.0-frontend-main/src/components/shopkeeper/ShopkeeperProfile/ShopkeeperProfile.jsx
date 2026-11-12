@@ -24,6 +24,7 @@ import Loading from "../../Loading/Loading";
 // import {setCurrShopName} from useCustomer(customerco);
 
 import { useCustomer } from "../../customer/CustomerContext/CustomerContext";
+import { compressImage } from "../../../Utils/imageCompression";
 const INITIAL_PROFILE = {
   ownerName: "",
   email: "",
@@ -180,8 +181,11 @@ export default function ShopkeeperProfile() {
   };
 
   // Select shop profile image
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
+  const handleImageChange = async (e) => {
+    let file = e.target.files?.[0];
+    file = await compressImage(file);
+    file = await compressImage(file);
+
 
     if (!file) return;
 
