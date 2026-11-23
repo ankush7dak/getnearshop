@@ -19,6 +19,7 @@ import { LINKS } from "../../../constants/LinksUtility";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../Loading/Loading";
 import { compressImage } from "../../../Utils/imageCompression";
+import { useCustomer } from "../../customer/CustomerContext/CustomerContext";
 
 /* Fix Leaflet marker icon issue */
 delete L.Icon.Default.prototype._getIconUrl;
@@ -55,6 +56,8 @@ const ShopRegistration = () => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading,setLoading] = useState(false);
+    const {setCurrShopName,setShopActive} = useCustomer();
+  
 
   const indiaCenter = [20.5937, 78.9629];
 
@@ -259,6 +262,8 @@ const ShopRegistration = () => {
       });
         if (res.data === true) {
           setLoading(false);
+          setShopActive(true);
+          setCurrShopName(formData.shopName);
           alert("Shop Registered Successfully! click on ok to move to Dashboard");
           navigate("/shopkeeper/dashboard");
         }

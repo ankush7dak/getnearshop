@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoutes/ProtectedRoute';
 import HamburgerMenu from './components/Hamburgers/HamburgerMenu';
 import Login from './components/LoginSignup/Login';
@@ -6,6 +6,11 @@ import SignUp from './components/LoginSignup/SignUp';
 import { Roles } from './constants/Roles';
 import { HOME_BY_ROLE } from './constants/HomeByRole';
 import CustomerHome from './pages/customer/CustomerHome';
+import { useEffect } from 'react';
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
+
+
 //---------------------------------------------------------------------------------------------
 import ProfilePage from './components/customer/ProfilePage/ProfilePage';
 import MyOrders from './components/customer/MyOrders/MyOrders';
@@ -34,6 +39,29 @@ import ShopkeeperTopNav from './components/shopkeeper/ShopkeeperTopNav/Shopkeepe
 function App() {
   const userRole = localStorage.getItem('role');
   console.log(userRole);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Only execute on Android/iOS Capacitor app
+    if (!Capacitor.isNativePlatform()) return;
+
+    let backButtonListener;
+
+    CapacitorApp.addListener("backButton", () => {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        if(userRole == 'shopkeeper') navigate("/shopkeeper/dashboard", { replace: true });
+        else if(userRole == 'customer') navigate("/customer/home", { replace: true });
+      }
+    }).then(listener => {
+      backButtonListener = listener;
+    });
+
+    return () => {
+      backButtonListener?.remove();
+    };
+  }, [navigate]);
 
   return (
     // <Router>

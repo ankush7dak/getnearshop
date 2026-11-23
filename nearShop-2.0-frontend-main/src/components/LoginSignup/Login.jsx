@@ -2,6 +2,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useEffect } from "react";
 
 import { HOME_BY_ROLE } from "../../constants/HomeByRole";
 import { LINKS } from "../../constants/LinksUtility";
@@ -20,10 +21,38 @@ const Login = () => {
   const [loginRole, setLoginRole] = useState("customer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userRole, setUserRole] = useState("");
 
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const response = await axios.get(
+          `${API}/auth/getUserRole`,
+          { withCredentials: true }
+        );
 
+        // User is already logged in
+        setUserRole(response.data);
+        if (response.data == 'shopkeeper') {
+          navigate('/shopkeeper/dashboard');
+        }
+        else if (response.data   == 'customer') {
+          navigate('/customer/home');
+        }
+
+      } catch (error) {
+        // Token expired or user is not logged in
+        setUserRole(null);
+
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthentication();
+  }, []);
   const handleLogin = async (e) => {
     e.preventDefault();
 
