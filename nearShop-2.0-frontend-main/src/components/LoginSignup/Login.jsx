@@ -38,7 +38,7 @@ const Login = () => {
         if (response.data == 'shopkeeper') {
           navigate('/shopkeeper/dashboard');
         }
-        else if (response.data   == 'customer') {
+        else if (response.data == 'customer') {
           navigate('/customer/home');
         }
 
@@ -173,8 +173,15 @@ const Login = () => {
         className="auth-form"
       >
 
-
+<div className="login-logo-container">
+          <img
+            src="./../../getNearShopLogo.png"
+            alt="GETNEARSHOP"
+            className="login-logo"
+          />
+        </div>
         <h2>Login</h2>
+        
         <GoogleSignIn></GoogleSignIn>
         {/* <h1>  </h1> */}
         {error && (

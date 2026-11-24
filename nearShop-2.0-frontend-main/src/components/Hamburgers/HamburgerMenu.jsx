@@ -5,6 +5,7 @@ import "./HamburgerMenu.css";
 import { HOME_BY_ROLE } from "../../constants/HomeByRole";
 import { AuthContext } from "../../contexts/authcontext/AuthProvider";
 import Logout from "../LoginSignup/Logout";
+import JoinShopQR from "../customer/CustomerJoinShop/JoinShopQR";
 
 const HamburgerMenu = () => {
   const [open, setOpen] = useState(false);
@@ -79,6 +80,7 @@ const HamburgerMenu = () => {
     alt="GetNearShop Logo"
     className="navbar-logo"
   />
+  {/* <JoinShopQR></JoinShopQR> */}
 
   <ul>
     {items.map((item) => (

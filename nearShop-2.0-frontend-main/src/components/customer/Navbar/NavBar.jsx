@@ -3,6 +3,7 @@ import { FaUserCircle, FaShoppingCart, FaBell } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./NavBar.css";
 import HamburgerMenu from "../../Hamburgers/HamburgerMenu";
+import JoinShopQR from "../CustomerJoinShop/JoinShopQR";
 
 export default function NavBar({ data }) {
   const [profileOpen, setProfileOpen] = useState(false);

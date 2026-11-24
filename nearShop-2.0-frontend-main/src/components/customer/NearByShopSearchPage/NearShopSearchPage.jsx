@@ -7,6 +7,8 @@ import { useCustomer } from "../CustomerContext/CustomerContext";
 import { useNavigate } from "react-router-dom";
 import { LINKS } from "../../../constants/LinksUtility";
 import Loading from "../../Loading/Loading";
+import CustomerJoinShop from "../CustomerJoinShop/CustomerJoinShop";
+import JoinShopQR from "../CustomerJoinShop/JoinShopQR";
 
 const STORAGE_KEY = "nearShopSearchPageState";
 
@@ -438,6 +440,8 @@ export default function NearShopSearchPage() {
   return (
     <main className="nearshop-page">
       {loading && <Loading />}
+    {/* {/* <CustomerJoinShop></CustomerJoinShop>   */}
+    {/* <JoinShopQR></JoinShopQR> */}
 
       <section className="nearshop-heading">
         <div>

@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import HamburgerMenu from "../../../Hamburgers/HamburgerMenu";
 import "./NearShopNavBar.css";
+import JoinShopQR from "../../CustomerJoinShop/JoinShopQR";
 
 export default function NearShopNavBar() {
   return (
@@ -9,8 +10,9 @@ export default function NearShopNavBar() {
       <div className="nearshop-nav-inner">
         {/* BRAND */}
         <HamburgerMenu></HamburgerMenu>
-        <div className="nav-brand">getNearShop</div>
+        <JoinShopQR></JoinShopQR>
 
+        {/* <div className="nav-brand">getNearShop</div> */}
         {/* SEARCH */}
        
       </div>
