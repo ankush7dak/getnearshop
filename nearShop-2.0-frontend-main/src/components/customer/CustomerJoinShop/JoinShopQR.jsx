@@ -21,6 +21,7 @@ export default function JoinShopQR() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [resultPopup, setResultPopup] = useState(null);
+  
 
   const scannerRef = useRef(null);
   const scanHandledRef = useRef(false);
