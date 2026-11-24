@@ -238,3 +238,32 @@
     flex-direction: column-reverse;
   }
 }
+
+.join-shop-qr__camera-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px;
+}
+
+.join-shop-qr__reader {
+  width: 100%;
+  max-width: 400px;
+  margin: 15px auto;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.join-shop-qr__reader video {
+  width: 100% !important;
+  height: auto !important;
+  object-fit: cover;
+}
+
+.join-shop-qr__reader img {
+  max-width: 100%;
+}
